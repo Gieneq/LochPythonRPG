@@ -1,4 +1,6 @@
 import pygame
+
+from . import debug
 from .settings import *
 from .tile import Rock
 from .player import Player
@@ -22,8 +24,10 @@ class Level:
                 if col == 'x':
                     Rock((x,y), [self.visible_sprites, self.obstacle_sprites])
                 if col == 'p':
-                    Player((x,y), [self.visible_sprites])
+                    self.player = Player((x,y), [self.visible_sprites], self.obstacle_sprites)
 
 
     def run(self):
         self.visible_sprites.draw(self.display_surface)
+        self.visible_sprites.update()
+        debug.text(y=30, msg=f'p:{self.player.direction}')
