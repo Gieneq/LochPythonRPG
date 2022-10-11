@@ -2,11 +2,11 @@ import random
 
 import pygame
 
-from support import import_csv_layout, import_folder
-from . import debug
-from .settings import *
+from core.utils import import_csv_layout, import_folder
+from core import debug
+from core.settings import *
 from .tile import Tile
-from .player import Player
+from entity.player import Player
 
 
 class Level:
@@ -23,31 +23,31 @@ class Level:
         self.create_map()
 
     def create_map(self):
-        layout = {
-            'boundary': import_csv_layout('./map/map_FloorBlocks.csv'),
-            'grass': import_csv_layout('./map/map_Grass.csv'),
-            'object': import_csv_layout('./map/map_LargeObjects.csv'),
-        }
-
-        graphics = {
-            'grass': import_folder('./graphics/grass'),
-            'object': import_folder('./graphics/objects'),
-        }
-
-        for style, layout in layout.items():
-            for row_idx, row in enumerate(layout):
-                for col_idx, col in enumerate(row):
-                    if col != '-1':
-                        x = col_idx * TILESIZE
-                        y = row_idx * TILESIZE
-                        if style == 'boundary':
-                            Tile((x, y), [self.obstacle_sprites], sprite_type='invisible')
-                        if style == 'grass':
-                            grass_surface = random.choice(graphics['grass'])
-                            Tile((x, y), [self.visible_sprites, self.obstacle_sprites], sprite_type='grass', surface=grass_surface)
-                        if style == 'object':
-                            object_surf = graphics['object'][int(col)]
-                            Tile((x, y), [self.visible_sprites, self.obstacle_sprites], sprite_type='object', surface=object_surf)
+        # layout = {
+        #     'boundary': import_csv_layout('../../data/map/map_FloorBlocks.csv'),
+        #     'grass': import_csv_layout('../../data/map/map_Grass.csv'),
+        #     'object': import_csv_layout('../../data/map/map_LargeObjects.csv'),
+        # }
+        #
+        # graphics = {
+        #     'grass': import_folder('../../data/graphics/grass'),
+        #     'object': import_folder('../../data/graphics/objects'),
+        # }
+        #
+        # for style, layout in layout.items():
+        #     for row_idx, row in enumerate(layout):
+        #         for col_idx, col in enumerate(row):
+        #             if col != '-1':
+        #                 x = col_idx * TILESIZE
+        #                 y = row_idx * TILESIZE
+        #                 if style == 'boundary':
+        #                     Tile((x, y), [self.obstacle_sprites], sprite_type='invisible')
+        #                 if style == 'grass':
+        #                     grass_surface = random.choice(graphics['grass'])
+        #                     Tile((x, y), [self.visible_sprites, self.obstacle_sprites], sprite_type='grass', surface=grass_surface)
+        #                 if style == 'object':
+        #                     object_surf = graphics['object'][int(col)]
+        #                     Tile((x, y), [self.visible_sprites, self.obstacle_sprites], sprite_type='object', surface=object_surf)
 
         self.player = Player((757, 1242), [self.visible_sprites], self.obstacle_sprites)
 
@@ -67,7 +67,7 @@ class YSortCameraGroup(pygame.sprite.Group):
         self.half_height = self.display_surface.get_height() // 2
         self.offset = pygame.math.Vector2()
 
-        self.floor_surf = pygame.image.load('./graphics/tilemap/ground.png')
+        self.floor_surf = pygame.image.load('./data/graphics/tilemap/ground.png')
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
     def custom_draw(self, player):

@@ -1,7 +1,6 @@
 import pygame
-from pygame.rect import Rect
 
-from .settings import *
+from core.settings import *
 
 
 class Tile(pygame.sprite.Sprite):

@@ -4,6 +4,9 @@ FPS = 30
 TILESIZE = 64
 DEBUG = True
 
+#
+RESOURCES_ROOT = 'data'
+
 WORLD_MAP = [
     ['x', 'x', 'x', 'x', 'x', 'x'],
     ['x', ' ', ' ', ' ', ' ', 'x'],

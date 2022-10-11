@@ -1,8 +1,8 @@
 import pygame
 import sys
-from game.settings import *
-from game import debug
-from game.level import Level
+from .settings import *
+from . import debug
+from world.level import Level
 
 
 class Game:
@@ -30,8 +30,3 @@ class Game:
             debug.text(msg=f"FPS:{round(self.clock.get_fps(),1)}")
             pygame.display.update()
             self.clock.tick(FPS)
-
-
-if __name__ == '__main__':
-    game = Game()
-    game.run()

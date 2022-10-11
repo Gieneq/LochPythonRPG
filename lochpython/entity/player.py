@@ -1,21 +1,50 @@
 import pygame
-from .settings import *
 
+from core.utils import import_folder
+
+GLOBAL_COOLDOWN = 500
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, obstacle_sprites):
         super().__init__(groups)
-        self.image = pygame.image.load('./graphics/player.png').convert_alpha()
+        self.image = pygame.image.load('./data/graphics/player.png').convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -26)
+
+        self.import_player_assets()
 
         self.direction = pygame.math.Vector2()
         self.speed = 6
         self.obstacle_sprites = obstacle_sprites
+        self.cooldown = 0
+        self.cooldown_start_time = 0
+
+
+    def import_player_assets(self):
+        character_path = '../../data/graphics/player'
+        self.animations = {
+            'up': [],
+            'down': [],
+            'left': [],
+            'right': [],
+            'up_idle': [],
+            'down_idle': [],
+            'left_idle': [],
+            'right_idle': [],
+            'up_use': [],
+            'down_attack': [],
+            'left_attack': [],
+            'right_attack': [],
+        }
+
+        for animation in self.animations.keys():
+            path = character_path + '/' + animation
+            self.animations[animation] = import_folder(path)
 
     def input(self):
         keys = pygame.key.get_pressed()
 
+        # movement
         if keys[pygame.K_w]:
             self.direction.y = -1
         elif keys[pygame.K_s]:
@@ -29,6 +58,11 @@ class Player(pygame.sprite.Sprite):
             self.direction.x = 1
         else:
             self.direction.x = 0
+
+        # use
+        if keys[pygame.K_SPACE] and self.cooldown:
+            self.cooldown_useup()
+            print('use')
 
     def collision(self, direction):
         if direction == 'horizontal':
@@ -58,6 +92,14 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.center = self.hitbox.center
 
+    def cooldown_update(self):
+        curent_time = pygame.time.get_ticks()
+        self.cooldown = min(0, self.cooldown_start_time - curent_time)
+
+    def cooldown_useup(self):
+        self.cooldown_start_time = pygame.time.get_ticks() + GLOBAL_COOLDOWN
+
     def update(self):
         self.input()
+        self.cooldown_update()
         self.move(self.speed)
