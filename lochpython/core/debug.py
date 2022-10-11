@@ -3,6 +3,7 @@ from .settings import *
 pygame.init()
 font = pygame.font.Font(None, 30)
 
+
 def text(x=10, y=10, msg='Working'):
     if DEBUG:
         display_surface = pygame.display.get_surface()

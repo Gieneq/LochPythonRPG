@@ -1,7 +1,40 @@
 from csv import reader
 from os import walk
+from time import time_ns
 
 import pygame.image
+
+NEARLY_ZERO = 1e-6
+
+
+class NanoTimer:
+    def __init__(self):
+        self.last_time_ns = 0
+        self.last_delta_ns = float(NEARLY_ZERO)
+
+    @staticmethod
+    def ns_to_s(ns):
+        return ns / float(1e9)
+
+    def start(self):
+        self.last_delta_ns = self.delta_time_ns
+        self.last_time_ns = time_ns()
+
+    @property
+    def delta_time_ns(self):
+        return time_ns() - self.last_time_ns
+
+    @property
+    def delta_time_s(self):
+        return NanoTimer.ns_to_s(self.delta_time_ns)
+
+    @property
+    def last_time_s(self):
+        return NanoTimer.ns_to_s(self.last_time_ns)
+
+    @property
+    def last_delta_s(self):
+        return NanoTimer.ns_to_s(self.last_delta_ns)
 
 
 def import_csv_layout(path):
