@@ -1,9 +1,8 @@
 import pygame
 import sys
 from .settings import *
-from . import debug
+from .debug import DebugWriter
 from world.level import Level
-from time import time_ns
 
 from .utils import NanoTimer
 
@@ -40,11 +39,13 @@ class Game:
         check_if_exit(Game.exit)
 
     def update(self, dt):
-        debug.text(msg=f"FPS:{round(self.clock.get_fps(), 1)}, dt: {dt}")
+        DebugWriter.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
+        DebugWriter.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
 
     def render(self):
         self.screen.fill('black')
         self.level.run()
+        DebugWriter.render()
         pygame.display.update()
 
     def start(self):

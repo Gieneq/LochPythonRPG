@@ -3,7 +3,7 @@ import random
 import pygame
 
 from core.utils import import_csv_layout, import_folder
-from core import debug
+from core.debug import DebugWriter
 from core.settings import *
 from .tile import Tile
 from entity.player import Player
@@ -55,8 +55,8 @@ class Level:
         # self.visible_sprites.draw(self.display_surface)
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
-        debug.text(y=30, msg=f'p_dir:{self.player.direction}')
-        debug.text(y=50, msg=f'p_center:{self.player.rect.center}')
+        DebugWriter.print(f'p_dir:{self.player.direction}')
+        DebugWriter.print(f'p_center:{self.player.rect.center}')
 
 
 class YSortCameraGroup(pygame.sprite.Group):
