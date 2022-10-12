@@ -1,10 +1,13 @@
 import pygame
-import sys
-from .settings import *
-from .debug import DebugWriter
-from world.level import Level
+pygame.init()
 
-from .utils import NanoTimer
+import sys
+from core.settings import *
+from core.debug import Debugger
+from world.world import World
+import core.renderer as renderer
+
+from core.utils import NanoTimer
 
 
 def check_if_exit(on_exit_function):
@@ -27,7 +30,13 @@ class Game:
         # setup game update
         self.clock = pygame.time.Clock()
 
-        self.level = Level()
+        #setup world
+        self.world = World()
+
+        #setup renderers
+        renderer.WorldRenderer.init()
+        renderer.WorldRenderer.attach(self.world)
+        renderer.DebugRenderer.attach(Debugger)
 
     @staticmethod
     def exit():
@@ -39,13 +48,17 @@ class Game:
         check_if_exit(Game.exit)
 
     def update(self, dt):
-        DebugWriter.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
-        DebugWriter.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
+        Debugger.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
+        Debugger.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
+        self.world.update(dt)
 
     def render(self):
         self.screen.fill('black')
-        self.level.run()
-        DebugWriter.render()
+
+        # use all renders
+        renderer.WorldRenderer.render()
+        renderer.DebugRenderer.render()
+
         pygame.display.update()
 
     def start(self):
