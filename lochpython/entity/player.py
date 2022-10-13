@@ -14,7 +14,7 @@ class Player(Entity):
         self.set_visible(visible)
 
         self.direction = pygame.math.Vector2()
-        self.speed = 6
+        self.speed = 300
         self.cooldown = 0
         self.cooldown_start_time = 0
 
@@ -37,7 +37,7 @@ class Player(Entity):
             self.direction.x = 0
 
 
-    def update(self, *args, **kwargs):
+    def update(self, dt, *args, **kwargs):
         Debugger.print(f"Player_center: {self.rect.center}")
         self.input()
-        self.move(self.speed, self.direction)
+        self.move(self.speed, dt, self.direction)

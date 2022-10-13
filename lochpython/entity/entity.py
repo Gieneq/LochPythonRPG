@@ -23,42 +23,35 @@ class Entity(Sprite):
         else:
             self.remove(self.world.obstacle_objects)
 
-
     def eval_collision(self, translation, obstacles):
+        self.eval_collision_x(translation, obstacles)
+        self.eval_collision_y(translation, obstacles)
+
+    def eval_collision_x(self, translation, obstacles):
         self.hitbox.x += translation[0]
         for obstacle in obstacles:
             if obstacle.hitbox.colliderect(self.hitbox):
-                self.eval_collision_x(translation[0], obstacle.hitbox)
+                if translation[0] > 0:
+                    self.hitbox.right = obstacle.hitbox.left
+                if translation[0] < 0:
+                    self.hitbox.left = obstacle.hitbox.right
 
+    def eval_collision_y(self, translation, obstacles):
         self.hitbox.y += translation[1]
         for obstacle in obstacles:
             if obstacle.hitbox.colliderect(self.hitbox):
-                self.eval_collision_y(translation[1], obstacle.hitbox)
+                if translation[1] > 0:
+                    self.hitbox.bottom = obstacle.hitbox.top
+                if translation[1] < 0:
+                    self.hitbox.top = obstacle.hitbox.bottom
 
-
-    def eval_collision_x(self, translation_x, obstacle_hitbox):
-        if translation_x > 0:
-            self.hitbox.right = obstacle_hitbox.left
-        if translation_x < 0:
-            self.hitbox.left = obstacle_hitbox.right
-
-    def eval_collision_y(self, translation_y, obstacle_hitbox):
-        if translation_y > 0:
-            self.hitbox.bottom = obstacle_hitbox.top
-        if translation_y < 0:
-            self.hitbox.top = obstacle_hitbox.bottom
-
-    def move(self, speed, direction):
+    def move(self, speed, dt, direction):
         if direction.magnitude() != 0:
             direction = direction.normalize()
 
-        # todo dt
-        translation = direction * speed
+        translation = direction * speed * dt
         obstacles = self.world.get_nearby_obstacles(self)
         self.eval_collision(translation, obstacles)
-        # print(dir(self.hitbox))
-        # self.hitbox.x += translation[0]
-        # self.hitbox.y += translation[1]
 
         self.rect.center = self.hitbox.center
 
