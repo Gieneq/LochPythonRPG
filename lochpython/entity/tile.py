@@ -12,3 +12,6 @@ class Tile(Entity):
         self.hitbox = self.rect.inflate(0, -26)
         self.set_visible(visible)
         self.set_collideable(True)
+
+    def update(self, dt, *args, **kwargs):
+        super().update(*args, **kwargs)

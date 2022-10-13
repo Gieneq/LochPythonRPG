@@ -4,17 +4,18 @@ from core.debug import Debugger
 from core.settings import *
 from pygame.sprite import Group
 
+
 # todo przenies grupy do renderera, world moze trzymac wlasne listy np chunkow - bedzie w nich na pewno wiecej obiektow
 # world moze miec cos wspolnego dla entity player/cosinnego
 
 # wworldrenderer ma miec metode sort, ktora bedzie wyzwalana podczas ruchu entity, dodawnaia entity do widzialnych obiektow
 
-#dodanie entity do swiata to nie to samo co zrobienie go widzialnym
+# dodanie entity do swiata to nie to samo co zrobienie go widzialnym
 
 class WorldRenderer:
     display_surface = None
     world = None
-    visible_objects = Group() # todo own implemetation
+    visible_objects = Group()  # todo own implemetation
 
     @classmethod
     def init(cls):
@@ -39,6 +40,7 @@ class WorldRenderer:
 
 
 class DebugRenderer:
+    display_surface = None
     font_size = 24
     numbering = True
     min_x, min_y = 10, 10
@@ -48,27 +50,30 @@ class DebugRenderer:
     _debugger = None
 
     @classmethod
+    def init(cls):
+        cls.display_surface = pygame.display.get_surface()
+
+    @classmethod
     def attach(cls, debugger):
         cls._debugger = debugger
 
     @classmethod
     def render(cls):
         if DEBUG:
-            display_surface = pygame.display.get_surface()
+            for rect, color, border in cls._debugger.rects:
+                pygame.draw.rect(cls.display_surface, color, rect, border)
+                # cls.display_surface.blit(text_surface, rect)
+
             for i_y, line in enumerate(cls._debugger.debug_lines):
                 line = f"{i_y}:   {line}" if cls.numbering else line
                 text_surface = cls.font.render(line, True, 'White')
                 x, y = cls.min_x, cls.min_y + i_y * cls.step_y
                 text_rect = text_surface.get_rect(topleft=(x, y))
-                pygame.draw.rect(display_surface, 'Black', text_rect)
-                display_surface.blit(text_surface, text_rect)
+                pygame.draw.rect(cls.display_surface, 'Black', text_rect)
+                cls.display_surface.blit(text_surface, text_rect)
 
             # consider extracting
             cls._debugger.clear()
-
-
-
-
 
 # class YSortCameraGroup(pygame.sprite.Group):
 #     def __init__(self):
@@ -92,4 +97,3 @@ class DebugRenderer:
 #         for sprite in sorted(self.sprites(), key=lambda s: s.rect.centery):
 #             offset_position = sprite.rect.topleft - self.offset
 #             self.display_surface.blit(sprite.image, offset_position)
-

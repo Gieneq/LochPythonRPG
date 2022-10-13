@@ -38,6 +38,7 @@ class Player(Entity):
 
 
     def update(self, dt, *args, **kwargs):
+        super().update(*args, **kwargs)
         Debugger.print(f"Player_center: {self.rect.center}")
         self.input()
         self.move(self.speed, dt, self.direction)

@@ -37,6 +37,7 @@ class Game:
         # setup renderers
         renderer.WorldRenderer.init()
         renderer.WorldRenderer.attach(self.world)
+        renderer.DebugRenderer.init()
         renderer.DebugRenderer.attach(Debugger)
 
     @staticmethod

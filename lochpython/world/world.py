@@ -1,5 +1,6 @@
 import pygame
 
+from core.debug import Debugger
 from core.utils import distance_squared
 from entity.player import Player
 from world.worldloader import WorldLoader
@@ -16,6 +17,7 @@ class World:
         WorldLoader.load_test_map(self)
 
     def update(self, dt):
+        self.obstacle_objects.update(dt=dt)
         self.entities.update(dt=dt)
 
     def on_player_move(self):
@@ -25,7 +27,10 @@ class World:
         potentially_colliding_objects = filter(
             lambda x: distance_squared(x.rect.center, entity.rect.center) < COLLISION_RANGE_SQUARED,
             self.obstacle_objects)
-        # potentially_colliding_objects.remove(entity)
-        # print(dir(potentially_colliding_objects))
-        return list(filter(lambda x: x is not entity, potentially_colliding_objects))
-        # return potentially_colliding_objects
+        potentially_colliding_objects = list(filter(lambda x: x is not entity, potentially_colliding_objects))
+
+        for obstacle in potentially_colliding_objects:
+            Debugger.rect(obstacle.rect, 'Orange')
+            Debugger.rect(obstacle.hitbox, 'Yellow')
+
+        return potentially_colliding_objects
