@@ -1,4 +1,5 @@
 import pygame
+
 pygame.init()
 
 import sys
@@ -30,10 +31,10 @@ class Game:
         # setup game update
         self.clock = pygame.time.Clock()
 
-        #setup world
+        # setup world
         self.world = World()
 
-        #setup renderers
+        # setup renderers
         renderer.WorldRenderer.init()
         renderer.WorldRenderer.attach(self.world)
         renderer.DebugRenderer.attach(Debugger)
@@ -64,9 +65,22 @@ class Game:
 
     def start(self):
         update_timer = NanoTimer()
+        benchmarking_timer = NanoTimer()
+        benchmark_delta_s = {
+            'input': 0,
+            'update': 0,
+            'render': 0,
+        }
+        benchmarking_msg = ''
         while True:
+            benchmarking_timer.start()
             self.input()
+            benchmark_delta_s['input'] = benchmarking_timer.start().delta_time_ns
             self.update(update_timer.last_delta_s)
+            benchmark_delta_s['update'] = benchmarking_timer.start().delta_time_ns
+            Debugger.print(benchmarking_msg)
             self.render()
+            benchmark_delta_s['render'] = benchmarking_timer.start().delta_time_ns
+            benchmarking_msg = f"Bench: {[(k, str(round(v*1e-6,3)).rjust(6, '0')) for k, v in benchmark_delta_s.items()]}[ms]"
             self.clock.tick(FPS)
             update_timer.start()

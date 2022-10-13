@@ -1,3 +1,4 @@
+import math
 from csv import reader
 from os import walk
 from time import time_ns
@@ -19,6 +20,7 @@ class NanoTimer:
     def start(self):
         self.last_delta_ns = self.delta_time_ns
         self.last_time_ns = time_ns()
+        return self
 
     @property
     def delta_time_ns(self):
@@ -37,20 +39,26 @@ class NanoTimer:
         return NanoTimer.ns_to_s(self.last_delta_ns)
 
 
-def import_csv_layout(path):
-    with open(path) as file:
-        terrain_map = []
-        layout = reader(file, delimiter=',')
-        for row in layout:
-            terrain_map.append(list(row))
-        return terrain_map
+def distance_squared(p1, p2):
+    return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
 
 
-def import_folder(path):
-    surfaces_list = []
-    for _, __, img_filenames in walk(path):
-        for img_filename in img_filenames:
-            img_path = path + '/' + img_filename
-            img_surf = pygame.image.load(img_path).convert_alpha()
-            surfaces_list.append(img_surf)
-    return surfaces_list
+def distance(p1, p2):
+    return math.sqrt(distance_squared(p1, p2))
+# def import_csv_layout(path):
+#     with open(path) as file:
+#         terrain_map = []
+#         layout = reader(file, delimiter=',')
+#         for row in layout:
+#             terrain_map.append(list(row))
+#         return terrain_map
+#
+#
+# def import_folder(path):
+#     surfaces_list = []
+#     for _, __, img_filenames in walk(path):
+#         for img_filename in img_filenames:
+#             img_path = path + '/' + img_filename
+#             img_surf = pygame.image.load(img_path).convert_alpha()
+#             surfaces_list.append(img_surf)
+#     return surfaces_list

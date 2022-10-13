@@ -36,19 +36,8 @@ class Player(Entity):
         else:
             self.direction.x = 0
 
-    def move(self, speed):
-        if self.direction.magnitude() != 0:
-            self.direction = self.direction.normalize()
-            self.world.on_player_move()
-
-        self.hitbox.x += self.direction.x * speed
-        self.collision('horizontal', self.direction)
-        self.hitbox.y += self.direction.y * speed
-        self.collision('vertical', self.direction)
-
-        self.rect.center = self.hitbox.center
 
     def update(self, *args, **kwargs):
         Debugger.print(f"Player_center: {self.rect.center}")
         self.input()
-        self.move(self.speed)
+        self.move(self.speed, self.direction)
