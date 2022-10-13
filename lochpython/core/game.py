@@ -45,6 +45,7 @@ class Game:
         sys.exit()
 
     def input(self):
+        Debugger.print(f"Mouse: {pygame.mouse.get_pos()}")
         check_if_exit(Game.exit)
 
     def update(self, dt):
