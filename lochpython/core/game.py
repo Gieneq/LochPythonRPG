@@ -39,6 +39,7 @@ class Game:
         renderer.WorldRenderer.attach(self.world)
         renderer.DebugRenderer.init()
         renderer.DebugRenderer.attach(Debugger)
+        renderer.DebugRenderer.attach_camera(self.world.camera)
 
     @staticmethod
     def exit():

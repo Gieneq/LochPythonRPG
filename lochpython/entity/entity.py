@@ -1,4 +1,3 @@
-from pygame.rect import Rect
 from pygame.sprite import Sprite
 
 from core.debug import Debugger
@@ -10,8 +9,6 @@ class Entity(Sprite):
         super().__init__()
         self.world = world
         self.hitbox = None  # uhh...
-
-
 
     def set_visible(self, visible):
         if visible:
@@ -66,7 +63,7 @@ class Entity(Sprite):
 
         self.rect.center = self.hitbox.center
 
-        # todo moze ial niezerowy dir w sciane
+        # todo should be done better
         self.world.on_player_move()
 
     def update(self, *args, **kwargs):

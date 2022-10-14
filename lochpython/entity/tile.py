@@ -1,6 +1,5 @@
 import pygame
 
-from core.debug import Debugger
 from entity.entity import Entity
 
 

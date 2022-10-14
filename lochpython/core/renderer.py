@@ -2,20 +2,32 @@ import pygame
 
 from core.debug import Debugger
 from core.settings import *
-from pygame.sprite import Group
+from pygame.math import Vector2
+
+from core.utils import sub_tuples_2D
 
 
-# todo przenies grupy do renderera, world moze trzymac wlasne listy np chunkow - bedzie w nich na pewno wiecej obiektow
-# world moze miec cos wspolnego dla entity player/cosinnego
+class RenderingGroup(pygame.sprite.Group):
+    def __init__(self, camera=Vector2()):
+        super().__init__()
+        self.camera = camera
 
-# wworldrenderer ma miec metode sort, ktora bedzie wyzwalana podczas ruchu entity, dodawnaia entity do widzialnych obiektow
+    def attach_camera(self, camera):
+        self.camera = camera
 
-# dodanie entity do swiata to nie to samo co zrobienie go widzialnym
+    def draw(self, surface):
+        Debugger.print(f"Cam: {self.camera}")
+        translation = sub_tuples_2D(self.camera, (HALF_WIDTH, HALF_HEIGHT))
+        for sprite in self.sprites():
+            sprite_pos = sub_tuples_2D(sprite.rect.topleft, translation)
+            sprite_image = sprite.image
+            surface.blit(sprite_image, sprite_pos)
+
 
 class WorldRenderer:
     display_surface = None
     world = None
-    visible_objects = Group()  # todo own implemetation
+    visible_objects = RenderingGroup()  # todo own implemetation
 
     @classmethod
     def init(cls):
@@ -27,8 +39,7 @@ class WorldRenderer:
 
     @classmethod
     def render(cls):
-        # TODO camera stuff
-        # if cls.world:
+        cls.visible_objects.attach_camera(cls.world.camera)
         cls.visible_objects.draw(cls.display_surface)
         Debugger.print(f'Visible_objects count: {len(cls.visible_objects)}')
         Debugger.print(f'Obstacle_objects count: {len(cls.world.obstacle_objects)}')
@@ -36,7 +47,9 @@ class WorldRenderer:
     @classmethod
     def sort_visibility(cls):
         Debugger.print('Sorting')
-        cls.visible_objects = Group(sorted(cls.visible_objects, key=lambda x: x.rect.centery))
+        sorted_objects = sorted(cls.visible_objects, key=lambda x: x.rect.centery)
+        cls.visible_objects.empty()
+        cls.visible_objects.add(sorted_objects)
 
 
 class DebugRenderer:
@@ -48,6 +61,7 @@ class DebugRenderer:
     step_y = int(font_size * 0.75)
     font = pygame.font.Font(None, font_size)
     _debugger = None
+    camera = (0, 0)
 
     @classmethod
     def init(cls):
@@ -58,11 +72,16 @@ class DebugRenderer:
         cls._debugger = debugger
 
     @classmethod
+    def attach_camera(cls, camera):
+        cls.camera = camera
+
+    @classmethod
     def render(cls):
         if DEBUG:
+            translation = sub_tuples_2D(cls.camera, (HALF_WIDTH, HALF_HEIGHT))
             for rect, color, border in cls._debugger.rects:
-                pygame.draw.rect(cls.display_surface, color, rect, border)
-                # cls.display_surface.blit(text_surface, rect)
+                translated_rect = rect.move(-translation[0], -translation[1])
+                pygame.draw.rect(cls.display_surface, color, translated_rect, border)
 
             for i_y, line in enumerate(cls._debugger.debug_lines):
                 line = f"{i_y}:   {line}" if cls.numbering else line
@@ -74,26 +93,3 @@ class DebugRenderer:
 
             # consider extracting
             cls._debugger.clear()
-
-# class YSortCameraGroup(pygame.sprite.Group):
-#     def __init__(self):
-#         super().__init__()
-#         self.display_surface = pygame.display.get_surface()
-#         self.half_width = self.display_surface.get_width() // 2
-#         self.half_height = self.display_surface.get_height() // 2
-#         self.offset = pygame.math.Vector2()
-#
-#         self.floor_surf = pygame.image.load('./data/graphics/tilemap/ground.png')
-#         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
-#
-#     def custom_draw(self, player):
-#         # getting the offset
-#         self.offset.x = player.rect.centerx - self.half_width
-#         self.offset.y = player.rect.centery - self.half_height
-#
-#         offset_position = self.floor_rect.topleft - self.offset
-#         self.display_surface.blit(self.floor_surf, offset_position)
-#
-#         for sprite in sorted(self.sprites(), key=lambda s: s.rect.centery):
-#             offset_position = sprite.rect.topleft - self.offset
-#             self.display_surface.blit(sprite.image, offset_position)

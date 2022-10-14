@@ -39,6 +39,10 @@ class NanoTimer:
         return NanoTimer.ns_to_s(self.last_delta_ns)
 
 
+def sub_tuples_2D(t1, t2):
+    return t1[0] - t2[0], t1[1] - t2[1]
+
+
 def distance_squared(p1, p2):
     return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
 
