@@ -6,8 +6,9 @@ from pygame.math import Vector2
 
 from core.utils import sub_tuples_2D
 
+pygame.init() #todo meh
 
-class RenderingGroup(pygame.sprite.Group):
+class RenderingGroup(list):
     def __init__(self, camera=Vector2()):
         super().__init__()
         self.camera = camera
@@ -18,10 +19,11 @@ class RenderingGroup(pygame.sprite.Group):
     def draw(self, surface):
         Debugger.print(f"Cam: {self.camera}")
         translation = sub_tuples_2D(self.camera, (HALF_WIDTH, HALF_HEIGHT))
-        for sprite in self.sprites():
-            sprite_pos = sub_tuples_2D(sprite.rect.topleft, translation)
-            sprite_image = sprite.image
-            surface.blit(sprite_image, sprite_pos)
+        for sprite_prop in self:
+            sprite_pos = sub_tuples_2D(sprite_prop.rect.topleft, translation)
+            sprite_image = sprite_prop.image
+            sprite_clip_rect = sprite_prop.clip_rect
+            surface.blit(sprite_image, sprite_pos, sprite_clip_rect)
 
 
 class WorldRenderer:
@@ -42,14 +44,14 @@ class WorldRenderer:
         cls.visible_objects.attach_camera(cls.world.camera)
         cls.visible_objects.draw(cls.display_surface)
         Debugger.print(f'Visible_objects count: {len(cls.visible_objects)}')
-        Debugger.print(f'Obstacle_objects count: {len(cls.world.obstacle_objects)}')
+        Debugger.print(f'Obstacle_objects count: {len(cls.world.limit_blocks)}')
 
     @classmethod
-    def sort_visibility(cls):
+    def sort_order(cls):
         Debugger.print('Sorting')
-        sorted_objects = sorted(cls.visible_objects, key=lambda x: x.rect.centery)
-        cls.visible_objects.empty()
-        cls.visible_objects.add(sorted_objects)
+        sorted_objects = sorted(cls.visible_objects, key=lambda x: x.rect.centery) #todo
+        cls.visible_objects.clear()
+        cls.visible_objects.extend(sorted_objects)
 
 
 class DebugRenderer:

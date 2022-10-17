@@ -1,9 +1,6 @@
-import pygame
-
-pygame.init()
+from core.settings import *
 
 import sys
-from core.settings import *
 from core.debug import Debugger
 from world.world import World
 import core.renderer as renderer
@@ -25,8 +22,8 @@ class Game:
         pygame.init()
 
         # setup window
-        pygame.display.set_caption(WINDOW_TITLE)
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption(WINDOW_TITLE) #tod omove to settings
+        self.screen = screen #todo do better
 
         # setup game update
         self.clock = pygame.time.Clock()
@@ -50,6 +47,7 @@ class Game:
     def input(self):
         Debugger.print(f"Mouse: {pygame.mouse.get_pos()}")
         check_if_exit(Game.exit)
+        self.world.input()
 
     def update(self, dt):
         Debugger.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
@@ -58,6 +56,7 @@ class Game:
 
     def render(self):
         self.screen.fill('black')
+        self.world.render()
 
         # use all renders
         renderer.WorldRenderer.render()

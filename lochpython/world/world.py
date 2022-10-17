@@ -1,12 +1,11 @@
-from pygame.math import Vector2
-from pygame.sprite import Group
+from math import sqrt
 
-from core.debug import Debugger
-from core.utils import distance_squared
-from entity.player import Player
+from pygame.math import Vector2
+from core.utils import distance_squared, radius_squared_from_rect
+from objects.property import Props
 from world.worldloader import WorldLoader
 from core.renderer import WorldRenderer
-from core.settings import COLLISION_RANGE_SQUARED
+from core.settings import COLLISION_RANGE
 
 
 class Camera(Vector2):
@@ -16,17 +15,17 @@ class Camera(Vector2):
         self.inertial = inertial
         self.target_pos = Vector2(self)
         self.velocity = Vector2(0, 0)
-        self.focused_entity = None
+        self.focused_rect = None
         self.speed = 4.5
 
-    def focus_on_entity(self, entity, refresh=True):
-        self.focused_entity = entity
+    def focus_on_entity(self, rect, refresh=True):
+        self.focused_rect = rect
         if refresh:
-            self.xy = self.focused_entity.rect.center
+            self.xy = self.focused_rect.center
 
     def update_camera(self, dt):
-        if self.focused_entity:
-            self.target_pos = self.focused_entity.rect.center
+        if self.focused_rect:
+            self.target_pos = self.focused_rect.center
 
         if not self.inertial:
             self.xy = self.target_pos
@@ -35,35 +34,66 @@ class Camera(Vector2):
             self.velocity = (self.target_pos - self.xy) * self.speed
 
     def __str__(self):
-        return f"Looking at: {self.focused_entity} {self.target_pos}, has pos: {self.xy}, vel: {self.velocity}"
+        return f"Looking at: {self.focused_rect} {self.target_pos}, has pos: {self.xy}, vel: {self.velocity}"
+
+
+class Layer(list):
+    # def __init__(self, *args):
+    #     super().__init__()
+
+    def update(self, *args, **kwargs):
+        for item in self:
+            item.update(*args, **kwargs)
+
+    def input(self, *args, **kwargs):
+        for item in self:
+            item.input(*args, **kwargs)
+
+    def render(self, *args, **kwargs):
+        for item in self:
+            item.render(*args, **kwargs)
 
 
 class World:
     def __init__(self):
-        self.obstacle_objects = Group()
-        self.entities = Group()
+        self.floor = Layer()
+        self.floor_details = Layer()
+        self.entities = Layer()
+        self.limit_blocks = Layer()
 
-        self.player = Player((580, 390), world=self)
+        self.stack = Layer([self.floor, self.floor_details, self.entities, self.limit_blocks])
+        self.player = None
+
+        self.colliding_objects = []
+
         WorldLoader.load_test_map(self)
         self.camera = Camera()
-        self.camera.focus_on_entity(self.player)
+        self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)
+
+    def input(self):
+        self.stack.input()
 
     def update(self, dt):
-        self.obstacle_objects.update(dt=dt)
-        self.entities.update(dt=dt)
+        self.stack.update(dt=dt)
         self.camera.update_camera(dt=dt)
 
+    def render(self):
+        self.stack.render()
+
     def on_player_move(self):
-        WorldRenderer.sort_visibility()
+        WorldRenderer.sort_order()
 
-    def get_nearby_obstacles(self, entity):
-        potentially_colliding_objects = filter(
-            lambda x: distance_squared(x.rect.center, entity.rect.center) < COLLISION_RANGE_SQUARED,
-            self.obstacle_objects)
-        potentially_colliding_objects = list(filter(lambda x: x is not entity, potentially_colliding_objects))
+    def is_near(self, hitbox_1, hitbox_2):
+        dist = sqrt(distance_squared(hitbox_1.center, hitbox_2.center))
+        r1 = sqrt(radius_squared_from_rect(hitbox_1))
+        r2 = sqrt(radius_squared_from_rect(hitbox_2))
+        return dist - r1 - r2 < COLLISION_RANGE
 
-        for obstacle in potentially_colliding_objects:
-            Debugger.rect(obstacle.rect, 'Orange')
-            Debugger.rect(obstacle.hitbox, 'Yellow')
+    def get_nearby_obstacles(self, coll_prop):
+        potentially_colliding_objects = filter(lambda x: self.is_near(x.hitbox, coll_prop.hitbox),
+                                               self.colliding_objects)
+        potentially_colliding_objects = filter(lambda x: x is not coll_prop, potentially_colliding_objects)
+        potentially_colliding_objects = set(potentially_colliding_objects)
 
+        potentially_colliding_objects = list(potentially_colliding_objects)
         return potentially_colliding_objects
