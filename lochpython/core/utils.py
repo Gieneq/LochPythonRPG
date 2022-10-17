@@ -9,9 +9,9 @@ NEARLY_ZERO = 1e-6
 
 
 class NanoTimer:
-    def __init__(self):
-        self.last_time_ns = 0
-        self.last_delta_ns = float(NEARLY_ZERO)
+    def __init__(self, init_delta_s=None):
+        self.last_time_ns = time_ns()
+        self.last_delta_ns = init_delta_s*1e9 if init_delta_s else float(NEARLY_ZERO)
 
     @staticmethod
     def ns_to_s(ns):

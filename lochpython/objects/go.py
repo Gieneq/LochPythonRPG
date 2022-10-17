@@ -43,6 +43,10 @@ class GameObject:
         self.add_property(Props.WSAD_DRIVEN, prop)
         return self
 
+    def with_animation(self, prop):
+        self.add_property(Props.ANIMATION, prop)
+        return self
+
     # general loop methods
 
     def input(self, *args, **kwargs):

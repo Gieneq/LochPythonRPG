@@ -28,6 +28,134 @@ class RenderProperty:
         print('Render should be overwritten', args, kwargs)
 
 
+class AnimationProperty(UpdateProperty):
+    def __init__(self, sprite_prop):
+        self.sprite_prop = sprite_prop
+        self.columns_count = 4
+        self.tile_size = 64
+        self._frames_count = 4
+        self.current_frame = 0
+        self._starting_frame = 0
+        self.looping = True
+        self.running = False
+        self.interval = 1
+        self.accumulated_time_s = 0
+
+    @property
+    def starting_frame(self):
+        return self._starting_frame
+
+    @starting_frame.setter
+    def starting_frame(self, frame):
+        self._starting_frame = frame
+        self.set_frame(frame)
+
+    @property
+    def interval(self):
+        return self._interval
+
+    @interval.setter
+    def interval(self, interval_s):
+        self._interval = interval_s
+        self._duration = self.interval * self.frames_count
+
+    @property
+    def duration(self):
+        return self._duration
+
+    @duration.setter
+    def duration(self, duration_s):
+        self._duration = duration_s
+        self._interval = self.duration / self.frames_count
+
+    @property
+    def frames_count(self):
+        return self._frames_count
+
+    @frames_count.setter
+    def frames_count(self, count):
+        self._frames_count = count
+        self._duration = self.interval * self.frames_count
+
+    def update_clip_rest(self):
+        i_x = self.current_frame % self.columns_count
+        i_y = self.current_frame // self.columns_count
+        self.sprite_prop.clip_rect.x = self.tile_size * i_x
+        self.sprite_prop.clip_rect.y = self.tile_size * i_y
+        self.sprite_prop.clip_rect.w = self.tile_size
+        self.sprite_prop.clip_rect.h = self.tile_size
+
+    def set_frame(self, index):
+        self.current_frame = index
+        self.update_clip_rest()
+
+    def next_frame(self):
+        self.current_frame += 1
+        if self.looping:
+            if self.current_frame >= self.starting_frame + self.frames_count:
+                self.current_frame -= self.starting_frame
+                self.current_frame %= self.frames_count
+                self.current_frame += self.starting_frame
+        elif self.current_frame >= self.starting_frame + self.frames_count:
+            self.current_frame = self.starting_frame + self.frames_count - 1
+            self.running = False
+        self.update_clip_rest()
+
+    def update(self, *args, dt, **kwargs):
+        if self.running:
+            self.accumulated_time_s += dt
+            Debugger.print('aa', self.accumulated_time_s)
+            if self.accumulated_time_s > self.interval:
+                self.accumulated_time_s -= self.interval
+                self.next_frame()
+
+
+class MovementAnimationProperty(AnimationProperty):
+    keyframes = {
+        'up': 0,
+        'right': 4,
+        'down': 8,
+        'left': 12,
+    }
+
+    def __init__(self, sprite_prop, moving_prop):
+        super().__init__(sprite_prop)
+        self.moving_prop = moving_prop
+        self.duration = 150 / moving_prop.speed
+        self.running = True
+        self.looping = True
+        self.last_keyframe = MovementAnimationProperty.keyframes['down']
+
+    def select_keyframe(self, dir_x, dir_y):
+        if dir_y < 0:
+            return self.keyframes['down']
+        if dir_y > 0:
+            return self.keyframes['up']
+        if dir_x < 0:
+            return self.keyframes['left']
+        if dir_x > 0:
+            return self.keyframes['right']
+        return None
+
+    def update(self, *args, dt, **kwargs):
+        super(MovementAnimationProperty, self).update(*args, dt=dt, **kwargs)
+        direction = self.moving_prop.direction
+        keyframe = self.select_keyframe(*direction)
+        Debugger.print('Last, key, start', self.last_keyframe, keyframe, self.starting_frame)
+
+        if keyframe is not None:
+            if self.last_keyframe != keyframe:
+                self.looping = True
+                self.running = True
+                self.starting_frame = keyframe
+            self.last_keyframe = keyframe
+        else:
+            # stop
+            self.looping = False
+            self.starting_frame = self.last_keyframe
+
+
+
 class SpriteProperty(RenderProperty):
     def __init__(self, image, world, position, dimensions=None, visible=False):
         self.world = world
@@ -179,22 +307,35 @@ class WSADDriven(InputProperty, UpdateProperty):
         self.moving_prop = moving_prop
 
     def input(self, *args, **kwargs):
-
         keys = pygame.key.get_pressed()
-        # movement
-        if keys[pygame.K_w]:
-            self.moving_prop.direction.y = -1
-        elif keys[pygame.K_s]:
-            self.moving_prop.direction.y = 1
-        else:
-            self.moving_prop.direction.y = 0
+        self.apply_key(keys)
 
-        if keys[pygame.K_a]:
-            self.moving_prop.direction.x = -1
-        elif keys[pygame.K_d]:
-            self.moving_prop.direction.x = 1
+    def apply_key(self, keys, axis_asnap=True):
+        if axis_asnap:
+            if keys[pygame.K_w]:
+                self.moving_prop.direction = Vector2(0, -1)
+            elif keys[pygame.K_s]:
+                self.moving_prop.direction = Vector2(0, 1)
+            elif keys[pygame.K_a]:
+                self.moving_prop.direction = Vector2(-1, 0)
+            elif keys[pygame.K_d]:
+                self.moving_prop.direction = Vector2(1, 0)
+            else:
+                self.moving_prop.direction = Vector2(0, 0)
         else:
-            self.moving_prop.direction.x = 0
+            if keys[pygame.K_w]:
+                self.moving_prop.direction.y = -1
+            elif keys[pygame.K_s]:
+                self.moving_prop.direction.y = 1
+            else:
+                self.moving_prop.direction.y = 0
+
+            if keys[pygame.K_a]:
+                self.moving_prop.direction.x = -1
+            elif keys[pygame.K_d]:
+                self.moving_prop.direction.x = 1
+            else:
+                self.moving_prop.direction.x = 0
 
     def update(self, *args, **kwargs):
         Debugger.print(f"WSAD_driven_rect: {self.moving_prop}")
@@ -205,3 +346,5 @@ class Props(Enum):
     COLLISION = CollisionProperty
     WSAD_DRIVEN = WSADDriven
     MOVING = MovingProperty
+    ANIMATION = AnimationProperty
+    MOVEMENT_ANIMATION = MovementAnimationProperty

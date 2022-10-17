@@ -6,7 +6,8 @@ from pygame.math import Vector2
 
 from core.utils import sub_tuples_2D
 
-pygame.init() #todo meh
+pygame.init()  # todo meh
+
 
 class RenderingGroup(list):
     def __init__(self, camera=Vector2()):
@@ -49,7 +50,7 @@ class WorldRenderer:
     @classmethod
     def sort_order(cls):
         Debugger.print('Sorting')
-        sorted_objects = sorted(cls.visible_objects, key=lambda x: x.rect.centery) #todo
+        sorted_objects = sorted(cls.visible_objects, key=lambda x: x.rect.centery)  # todo
         cls.visible_objects.clear()
         cls.visible_objects.extend(sorted_objects)
 

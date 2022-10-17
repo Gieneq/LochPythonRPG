@@ -3,7 +3,8 @@ import pygame
 from core.settings import *
 # from entity.tile import Tile
 from objects.go import GameObject
-from objects.property import Props, SpriteProperty, CollisionProperty, MovingProperty, WSADDriven
+from objects.property import Props, SpriteProperty, CollisionProperty, MovingProperty, WSADDriven, AnimationProperty, \
+    MovementAnimationProperty
 
 TEST_WORLD_MAP = [
     ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
@@ -59,11 +60,12 @@ class WorldLoader:
                     world.limit_blocks.append(limit_block)
 
 
-        player_sprite = SpriteProperty(loader.player, world, (580, 390), visible=True)
+        player_sprite = SpriteProperty(loader.player, world, (580, 390), (TILESIZE, TILESIZE), visible=True)
         player_coll = CollisionProperty(player_sprite.rect, world)
         player_moving = MovingProperty(player_coll, world)
         player_wsad = WSADDriven(player_moving)
-
-        player = GameObject().with_sprite(player_sprite).with_moving(player_moving).with_wsad(player_wsad).with_collision(player_coll)
+        anim_prop = MovementAnimationProperty(player_sprite, player_moving)
+        # anim_prop.next_frame()
+        player = GameObject().with_sprite(player_sprite).with_moving(player_moving).with_wsad(player_wsad).with_collision(player_coll).with_animation(anim_prop)
         world.entities.append(player)
         world.player = player

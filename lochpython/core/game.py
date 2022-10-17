@@ -65,7 +65,7 @@ class Game:
         pygame.display.update()
 
     def start(self):
-        update_timer = NanoTimer()
+        update_timer = NanoTimer(init_delta_s=1/FPS)
         benchmarking_timer = NanoTimer()
         benchmark_delta_s = {
             'input': 0,
