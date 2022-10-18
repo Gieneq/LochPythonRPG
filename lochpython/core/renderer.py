@@ -48,8 +48,11 @@ class WorldRenderer:
         cls.stack[layer_id].append(sprite_prop)
 
     @classmethod
-    def remove_visible_object(cls, sth):
-        pass
+    def remove_visible_object(cls, sprite_prop):
+        layer_id = sprite_prop.stack_layer
+        if sprite_prop in cls.stack[layer_id]:
+            cls.stack[layer_id].remove(sprite_prop)
+
 
     @classmethod
     def render(cls):
