@@ -36,9 +36,11 @@ class ImagesLoader:
         # todo add meta data like grid size, tile width
         self.floor_image = pygame.image.load('./data/graphics/floor.png').convert_alpha()
         self.water_image = pygame.image.load('./data/graphics/water.png').convert_alpha()
+        # self.water_image = pygame.transform.scale2x(self.water_image)
+        # self.water_image = pygame.transform.scale2x(self.water_image)
         self.floor_borders = pygame.image.load('./data/graphics/borders.png').convert_alpha()
         self.objects = pygame.image.load('./data/graphics/objects.png').convert_alpha()
-        self.player = pygame.image.load('./data/graphics/player.png').convert_alpha()
+        self.player = pygame.image.load('./data/graphics/player_test.png').convert_alpha()
         self.rock = pygame.image.load('./data/graphics/rock.png').convert_alpha()
 
 
@@ -95,9 +97,11 @@ class WorldLoader:
                 # todo indicate tile is animated, some need for metadata 😒
                 if idx == 0:
                     image = loader.water_image
+                    col_count = 2
                 else:
                     image = loader.floor_image
-                sprite_prop = SpriteProperty(image, world, (x, y), dimensions=dimension, visible=True)
+                    col_count = 1
+                sprite_prop = SpriteProperty(image, world, (x, y), dimensions=dimension, visible=True, columns_count=col_count)
                 floor_tile.with_sprite(sprite_prop)
 
                 if idx == 0:
@@ -168,7 +172,7 @@ class WorldLoader:
                     limit_block = GameObject().with_collision(CollisionProperty(limit_rect, world))
                     world.limit_blocks.append(limit_block)
 
-        player_sprite = SpriteProperty(loader.player, world, (590, 440), (TILESIZE, TILESIZE), visible=True, stack_layer=2)
+        player_sprite = SpriteProperty(loader.player, world, (590, 440), (20, 40), visible=True, stack_layer=2)
         player_coll = CollisionProperty(player_sprite.rect, world)
         player_moving = MovingProperty(player_coll, world)
         player_wsad = WSADDriven(player_moving)

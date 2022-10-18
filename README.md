@@ -2,12 +2,11 @@
 
 Lets say to be RPG game. Project ispired by [Zelda in Python](https://www.youtube.com/watch?v=QU1pPzEGrqw).
 
-
 ## Devlog
 
-Project in development. Most recent screenshot:
+Project in development. Recent screenshot:
 
-![Collision detection example](img/tibia_2_bushes.png)
+![Recent screenshot](img/tibia_2_bushes.png)
 
 ### Collison detection introduction
 
@@ -52,8 +51,17 @@ This separation helps in sorting.
 
 Introduced list of obstacles interacting with **CollisionProperty** used to help evaluate collision detection.
 
-![Collision detection example](img/tibia_2_water_burder.png)
+![Invisible borders](img/tibia_2_water_border.png)
 
 Invisible borders (or limits) are used to prevent player from escaping the world. Those can be removed making e.g. walkable water.
 
-![Collision detection example](img/tibia_2_bridge.png)
+![Invisible borders](img/tibia_2_bridge.png)
+
+### Scaling world surface
+
+Game is meant to be **pixel-art**. 20x40px for character is more than enough. Global **scale** option - world is rendered to scaled down _surface_ and then scaled up to fill entire window. GUI elements are not treated with the scale. Antialiasing if turned off to obtain hard pixeled edge.
+
+So far graphics were only placeholders. Final tilesize is sublimating, probably it will be 32px so some more concrete graphics are needed.
+
+![Scaled up world](img/tibia_2_scale.png)
+

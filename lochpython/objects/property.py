@@ -79,17 +79,10 @@ class AnimationProperty(UpdateProperty):
         self._frames_count = count
         self._duration = self.interval * self.frames_count
 
-    def update_clip_rest(self):
-        i_x = self.current_frame % self.columns_count
-        i_y = self.current_frame // self.columns_count
-        self.sprite_prop.clip_rect.x = self.tile_size * i_x
-        self.sprite_prop.clip_rect.y = self.tile_size * i_y
-        self.sprite_prop.clip_rect.w = self.tile_size
-        self.sprite_prop.clip_rect.h = self.tile_size
 
     def set_frame(self, index):
         self.current_frame = index
-        self.update_clip_rest()
+        self.sprite_prop.update_clip_rect(self.current_frame)
 
     def next_frame(self):
         self.current_frame += 1
@@ -101,7 +94,7 @@ class AnimationProperty(UpdateProperty):
         elif self.current_frame >= self.starting_frame + self.frames_count:
             self.current_frame = self.starting_frame + self.frames_count - 1
             self.running = False
-        self.update_clip_rest()
+        self.set_frame(self.current_frame)
 
     def update(self, *args, dt, **kwargs):
         if self.running:
@@ -142,7 +135,7 @@ class MovementAnimationProperty(AnimationProperty):
         super(MovementAnimationProperty, self).update(*args, dt=dt, **kwargs)
         direction = self.moving_prop.direction
         keyframe = self.select_keyframe(*direction)
-        Debugger.print('Last, key, start', self.last_keyframe, keyframe, self.starting_frame)
+        # Debugger.print('Last, key, start', self.last_keyframe, keyframe, self.starting_frame)
 
         if keyframe is not None:
             if self.last_keyframe != keyframe:
@@ -157,7 +150,7 @@ class MovementAnimationProperty(AnimationProperty):
 
 
 class SpriteProperty(RenderProperty):
-    def __init__(self, image, world, position, dimensions=None, visible=False, stack_layer=0):
+    def __init__(self, image, world, position, dimensions=None, columns_count=4, visible=False, stack_layer=0):
         self.world = world
         self.stack_layer = stack_layer
         self.sprite = Sprite()  # no graoup at start = visible False
@@ -167,6 +160,7 @@ class SpriteProperty(RenderProperty):
         self.sprite.rect = Rect(position, dimensions)
         self.visible = visible
         self.clip_rect = Rect((0, 0), self.rect.size)
+        self._columns_count = columns_count
 
     def __del__(self):
         self.visible = False
@@ -183,6 +177,15 @@ class SpriteProperty(RenderProperty):
     def visible(self):
         return self._visible
 
+    @property
+    def columns_count(self):
+        return self._columns_count
+
+    @columns_count.setter
+    def columns_count(self, count):
+        self._columns_count = count
+        self.update_clip_rect(0)
+
     @visible.setter
     def visible(self, vis):
         self._visible = vis
@@ -190,6 +193,10 @@ class SpriteProperty(RenderProperty):
             WorldRenderer.add_visible_object(self)
         else:
             WorldRenderer.remove_visible_object(self)
+
+    def update_clip_rect(self, index):
+        self.clip_rect.x = self.rect.w * (index % self._columns_count)
+        self.clip_rect.y = self.rect.h * (index // self._columns_count)
 
     def render(self, *args, **kwargs):
         if self.visible:

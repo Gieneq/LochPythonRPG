@@ -23,7 +23,6 @@ class Game:
 
         # setup window
         pygame.display.set_caption(WINDOW_TITLE) #tod omove to settings
-        self.screen = screen #todo do better
 
         # setup game update
         self.clock = pygame.time.Clock()
@@ -32,6 +31,7 @@ class Game:
         self.world = World()
 
         # setup renderers
+        renderer.MainRenderer.init()
         renderer.WorldRenderer.init()
         renderer.WorldRenderer.attach(self.world)
         renderer.DebugRenderer.init()
@@ -55,14 +55,9 @@ class Game:
         self.world.update(dt)
 
     def render(self):
-        self.screen.fill('black')
         self.world.render()
+        renderer.MainRenderer.render()
 
-        # use all renders
-        renderer.WorldRenderer.render()
-        renderer.DebugRenderer.render()
-
-        pygame.display.update()
 
     def start(self):
         update_timer = NanoTimer(init_delta_s=1/FPS)
