@@ -5,6 +5,7 @@ from pygame import Rect
 from pygame.math import Vector2
 from pygame.sprite import Sprite
 from abc import ABC, abstractmethod
+from core.settings import TILESIZE
 
 from core.debug import Debugger
 from core.renderer import WorldRenderer
@@ -29,15 +30,16 @@ class RenderProperty:
 
 
 class AnimationProperty(UpdateProperty):
-    def __init__(self, sprite_prop):
+    def __init__(self, sprite_prop, columns_count=4, tile_size=TILESIZE, looping=True, running=False, starting_frame=0,
+                 current_frame=0):
         self.sprite_prop = sprite_prop
-        self.columns_count = 4
-        self.tile_size = 64
+        self.columns_count = columns_count
+        self.tile_size = tile_size
         self._frames_count = 4
-        self.current_frame = 0
-        self._starting_frame = 0
-        self.looping = True
-        self.running = False
+        self.current_frame = current_frame
+        self._starting_frame = starting_frame
+        self.looping = looping
+        self.running = running
         self.interval = 1
         self.accumulated_time_s = 0
 
@@ -104,7 +106,6 @@ class AnimationProperty(UpdateProperty):
     def update(self, *args, dt, **kwargs):
         if self.running:
             self.accumulated_time_s += dt
-            Debugger.print('aa', self.accumulated_time_s)
             if self.accumulated_time_s > self.interval:
                 self.accumulated_time_s -= self.interval
                 self.next_frame()
@@ -155,17 +156,16 @@ class MovementAnimationProperty(AnimationProperty):
             self.starting_frame = self.last_keyframe
 
 
-
 class SpriteProperty(RenderProperty):
-    def __init__(self, image, world, position, dimensions=None, visible=False):
+    def __init__(self, image, world, position, dimensions=None, visible=False, stack_layer=0):
         self.world = world
+        self.stack_layer = stack_layer
         self.sprite = Sprite()  # no graoup at start = visible False
         self.sprite.image = image
         if not dimensions:
             dimensions = image.get_width(), image.get_height()
         self.sprite.rect = Rect(position, dimensions)
         self.visible = visible
-
         self.clip_rect = Rect((0, 0), self.rect.size)
 
     def __del__(self):
@@ -187,9 +187,9 @@ class SpriteProperty(RenderProperty):
     def visible(self, vis):
         self._visible = vis
         if self._visible:
-            WorldRenderer.visible_objects.append(self)
-        elif self in WorldRenderer.visible_objects:
-            WorldRenderer.visible_objects.remove(self)
+            WorldRenderer.add_visible_object(self)
+        else:
+            WorldRenderer.remove_visible_object(self)
 
     def render(self, *args, **kwargs):
         if self.visible:

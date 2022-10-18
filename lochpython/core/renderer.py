@@ -18,7 +18,6 @@ class RenderingGroup(list):
         self.camera = camera
 
     def draw(self, surface):
-        Debugger.print(f"Cam: {self.camera}")
         translation = sub_tuples_2D(self.camera, (HALF_WIDTH, HALF_HEIGHT))
         for sprite_prop in self:
             sprite_pos = sub_tuples_2D(sprite_prop.rect.topleft, translation)
@@ -30,7 +29,10 @@ class RenderingGroup(list):
 class WorldRenderer:
     display_surface = None
     world = None
-    visible_objects = RenderingGroup()  # todo own implemetation
+    floor_objects = RenderingGroup()
+    details_objects = RenderingGroup()
+    entity_objects = RenderingGroup()
+    stack = [floor_objects, details_objects, entity_objects]
 
     @classmethod
     def init(cls):
@@ -41,18 +43,29 @@ class WorldRenderer:
         cls.world = world
 
     @classmethod
+    def add_visible_object(cls, sprite_prop):
+        layer_id = sprite_prop.stack_layer
+        cls.stack[layer_id].append(sprite_prop)
+
+    @classmethod
+    def remove_visible_object(cls, sth):
+        pass
+
+    @classmethod
     def render(cls):
-        cls.visible_objects.attach_camera(cls.world.camera)
-        cls.visible_objects.draw(cls.display_surface)
-        Debugger.print(f'Visible_objects count: {len(cls.visible_objects)}')
+        Debugger.print(f"Cam: {cls.world.camera}")
+        for layer in cls.stack:
+            layer.attach_camera(cls.world.camera)
+            layer.draw(cls.display_surface)
+        Debugger.print(f'Visible_objects count: {len(cls.entity_objects)}')
         Debugger.print(f'Obstacle_objects count: {len(cls.world.limit_blocks)}')
 
     @classmethod
     def sort_order(cls):
         Debugger.print('Sorting')
-        sorted_objects = sorted(cls.visible_objects, key=lambda x: x.rect.centery)  # todo
-        cls.visible_objects.clear()
-        cls.visible_objects.extend(sorted_objects)
+        sorted_objects = sorted(cls.entity_objects, key=lambda x: x.rect.centery)  # todo
+        cls.entity_objects.clear()
+        cls.entity_objects.extend(sorted_objects)
 
 
 class DebugRenderer:
