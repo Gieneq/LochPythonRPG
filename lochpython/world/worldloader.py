@@ -61,18 +61,6 @@ loader = ImagesLoader.instance
 
 
 class WorldLoader:
-    FLOOR_DATA = {
-        'grid': 8,
-        'ids': {
-            0: 'water',
-            1: 'grass',
-            2: 'dirt',
-            3: 'sand',
-            4: 'cobble',
-            5: 'planks',
-        }
-    }
-
     @staticmethod
     def load_csv_map(path):
         with open(path, 'r') as file:

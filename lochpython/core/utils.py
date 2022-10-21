@@ -53,3 +53,25 @@ def radius_squared_from_rect(rect):
 
 def distance(p1, p2):
     return math.sqrt(distance_squared(p1, p2))
+
+
+class ValueFilter:
+    def __init__(self,  size=16):
+        self.buffer = [0]*size
+        self.idx = 0
+
+    def push_value(self, v):
+        self.buffer[self.idx] = v
+        self.idx = (self.idx + 1) % len(self.buffer)
+
+    @property
+    def average(self):
+        return sum(self.buffer) / len(self.buffer)
+
+    @property
+    def median(self):
+        return sorted(self.buffer)[len(self.buffer)//2]
+
+    def __str__(self):
+        return str(self.average)
+

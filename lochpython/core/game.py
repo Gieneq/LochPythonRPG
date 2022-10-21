@@ -6,7 +6,7 @@ from objects.property import AnimationPlayer
 from world.world import World
 import core.renderer as renderer
 
-from core.utils import NanoTimer
+from core.utils import NanoTimer, ValueFilter
 
 
 def check_if_exit(on_exit_function):
@@ -65,20 +65,20 @@ class Game:
         update_timer = NanoTimer(init_delta_s=1/FPS)
         benchmarking_timer = NanoTimer()
         benchmark_delta_s = {
-            'input': 0,
-            'update': 0,
-            'render': 0,
+            'input': ValueFilter(),
+            'update': ValueFilter(),
+            'render': ValueFilter(),
         }
         benchmarking_msg = ''
         while True:
             benchmarking_timer.start()
             self.input()
-            benchmark_delta_s['input'] = benchmarking_timer.start().delta_time_ns
+            benchmark_delta_s['input'].push_value(benchmarking_timer.start().last_delta_ns)
             self.update(update_timer.last_delta_s)
-            benchmark_delta_s['update'] = benchmarking_timer.start().delta_time_ns
+            benchmark_delta_s['update'].push_value(benchmarking_timer.start().last_delta_ns)
             Debugger.print(benchmarking_msg)
             self.render()
-            benchmark_delta_s['render'] = benchmarking_timer.start().delta_time_ns
-            benchmarking_msg = f"Bench: {[(k, str(round(v*1e-6,3)).rjust(6, '0')) for k, v in benchmark_delta_s.items()]}[ms]"
+            benchmark_delta_s['render'].push_value(benchmarking_timer.start().last_delta_ns)
+            benchmarking_msg = f"Bench: {[(k, str(round(v.median*1e-6,3)).rjust(6, '0')) for k, v in benchmark_delta_s.items()]}[ms]"
             self.clock.tick(FPS)
             update_timer.start()
