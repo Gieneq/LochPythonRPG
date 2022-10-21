@@ -1,8 +1,9 @@
 from math import sqrt
 
+from pygame import Rect
 from pygame.math import Vector2
 from core.utils import distance_squared, radius_squared_from_rect
-from objects.property import Props
+from objects.property import Props, AnimationPlayer
 from world.worldloader import WorldLoader
 from core.renderer import WorldRenderer
 from core.settings import COLLISION_RANGE
@@ -61,6 +62,10 @@ class World:
         self.entities = Layer()
         self.limit_blocks = Layer()
 
+        self.global_timers = []
+        self.nature_timer = AnimationPlayer(frames_count=4, duration=5) #todo
+        self.global_timers.append(self.nature_timer)
+
         self.stack = Layer([self.floor, self.floor_details, self.entities, self.limit_blocks])
         self.player = None
 
@@ -70,12 +75,15 @@ class World:
         self.camera = Camera()
         self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)
 
+
     def input(self):
         self.stack.input()
 
     def update(self, dt):
         self.stack.update(dt=dt)
         self.camera.update_camera(dt=dt)
+        for global_timer in self.global_timers:
+            global_timer.update(dt=dt)
 
     def render(self):
         self.stack.render()

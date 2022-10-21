@@ -20,10 +20,10 @@ class RenderingGroup(list):
         translation = sub_tuples_2D(self.camera, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
         for sprite_prop in self:
             sprite_pos = sub_tuples_2D(sprite_prop.rect.topleft, translation)
-            sprite_image = sprite_prop.image
+            image_meta = sprite_prop.image_meta
             sprite_clip_rect = sprite_prop.clip_rect
             # scaled_image = pygame.transform.scale(sprite_image, (w,h))
-            surface.blit(sprite_image, sprite_pos, sprite_clip_rect)
+            surface.blit(image_meta.image, sprite_pos, sprite_clip_rect)
 
 
 class MainRenderer:
@@ -91,12 +91,12 @@ class WorldRenderer:
 
     @classmethod
     def add_visible_object(cls, sprite_prop):
-        layer_id = sprite_prop.stack_layer
+        layer_id = sprite_prop.stack_layer.layer_id
         cls.stack[layer_id].append(sprite_prop)
 
     @classmethod
     def remove_visible_object(cls, sprite_prop):
-        layer_id = sprite_prop.stack_layer
+        layer_id = sprite_prop.stack_layer.layer_id
         if sprite_prop in cls.stack[layer_id]:
             cls.stack[layer_id].remove(sprite_prop)
 

@@ -2,6 +2,7 @@ from core.settings import *
 
 import sys
 from core.debug import Debugger
+from objects.property import AnimationPlayer
 from world.world import World
 import core.renderer as renderer
 
@@ -50,6 +51,7 @@ class Game:
         self.world.input()
 
     def update(self, dt):
+        Debugger.print(f"AnimationTimers: {AnimationPlayer.total_players}")
         Debugger.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
         Debugger.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
         self.world.update(dt)

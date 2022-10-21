@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 
 import pygame
 from pygame import Rect
@@ -29,19 +29,57 @@ class RenderProperty:
         print('Render should be overwritten', args, kwargs)
 
 
+class AnimationPlayer:
+    players_register = []
+
+    def __init__(self, frames_count, duration=1, active=True, handlers=None):
+        self.frames_count = frames_count
+        self.interval = duration / self.frames_count
+        self.active = active
+        self._accumulated_time_s = 0
+        self.handlers = handlers if handlers else []
+        # todo add handlers checking if function
+        AnimationPlayer.players_register.append(self)
+
+    @property
+    def duration(self):
+        return self.interval * self.frames_count
+
+    @duration.setter
+    def duration(self, duration_s):
+        self.interval = duration_s / self.frames_count
+
+    def __del__(self):
+        if self in AnimationPlayer.players_register:
+            AnimationPlayer.players_register.remove(self)
+
+    def update(self, *args, dt, **kwargs):
+        if self.active and self.handlers:
+            self._accumulated_time_s += dt
+            if self._accumulated_time_s > self.interval:
+                self._accumulated_time_s -= self.interval
+                for handler in self.handlers:
+                    handler()
+
+    @classmethod
+    @property
+    def total_players(cls):
+        return len(cls.players_register)
+
+
 class AnimationProperty(UpdateProperty):
-    def __init__(self, sprite_prop, columns_count=4, tile_size=TILESIZE, looping=True, running=False, starting_frame=0,
-                 current_frame=0):
+
+    def __init__(self, sprite_prop, looping=True, active=False, starting_frame=0, frames_count=1):
         self.sprite_prop = sprite_prop
-        self.columns_count = columns_count
-        self.tile_size = tile_size
-        self._frames_count = 4
-        self.current_frame = current_frame
-        self._starting_frame = starting_frame
+        self.frames_count = frames_count
+        self.starting_frame = starting_frame
         self.looping = looping
-        self.running = running
-        self.interval = 1
-        self.accumulated_time_s = 0
+        self.active = active
+        self.own_player = None
+
+    def attach_own_player(self, player):
+        self.own_player = player
+        player.handlers.append(self.next_frame)
 
     @property
     def starting_frame(self):
@@ -50,141 +88,129 @@ class AnimationProperty(UpdateProperty):
     @starting_frame.setter
     def starting_frame(self, frame):
         self._starting_frame = frame
-        self.set_frame(frame)
+        # self.current_frame = frame #todo consider
 
     @property
-    def interval(self):
-        return self._interval
+    def current_frame(self):
+        return self.sprite_prop.image_index
 
-    @interval.setter
-    def interval(self, interval_s):
-        self._interval = interval_s
-        self._duration = self.interval * self.frames_count
-
-    @property
-    def duration(self):
-        return self._duration
-
-    @duration.setter
-    def duration(self, duration_s):
-        self._duration = duration_s
-        self._interval = self.duration / self.frames_count
-
-    @property
-    def frames_count(self):
-        return self._frames_count
-
-    @frames_count.setter
-    def frames_count(self, count):
-        self._frames_count = count
-        self._duration = self.interval * self.frames_count
-
-
-    def set_frame(self, index):
-        self.current_frame = index
-        self.sprite_prop.update_clip_rect(self.current_frame)
+    @current_frame.setter
+    def current_frame(self, frame):
+        self.sprite_prop.image_index = frame
 
     def next_frame(self):
-        self.current_frame += 1
-        if self.looping:
-            if self.current_frame >= self.starting_frame + self.frames_count:
-                self.current_frame -= self.starting_frame
-                self.current_frame %= self.frames_count
-                self.current_frame += self.starting_frame
-        elif self.current_frame >= self.starting_frame + self.frames_count:
-            self.current_frame = self.starting_frame + self.frames_count - 1
-            self.running = False
-        self.set_frame(self.current_frame)
+        next_index = self.current_frame + 1
+        if next_index >= self.starting_frame + self.frames_count:
+            if self.looping:
+                next_index = ((next_index - self.starting_frame) % self.frames_count) + self.starting_frame
+            else:
+                next_index = self.starting_frame + self.frames_count - 1
+
+        self.current_frame = next_index
 
     def update(self, *args, dt, **kwargs):
-        if self.running:
-            self.accumulated_time_s += dt
-            if self.accumulated_time_s > self.interval:
-                self.accumulated_time_s -= self.interval
-                self.next_frame()
+        if self.active and self.own_player:
+            self.own_player.update(*args, dt=dt, **kwargs)
 
 
 class MovementAnimationProperty(AnimationProperty):
-    keyframes = {
-        'up': 0,
-        'right': 4,
-        'down': 8,
-        'left': 12,
-    }
+    class EntityState(Enum):
+        IDLE = 0
+        MOVING = 1
+
+        @classmethod
+        def get_state(cls, moving_prop):
+            return cls.MOVING if moving_prop.direction.magnitude() != 0 else cls.IDLE
 
     def __init__(self, sprite_prop, moving_prop):
-        super().__init__(sprite_prop)
+        super().__init__(sprite_prop, starting_frame=0, frames_count=4)
         self.moving_prop = moving_prop
-        self.duration = 150 / moving_prop.speed
-        self.running = True
+        self.active = True
         self.looping = True
-        self.last_keyframe = MovementAnimationProperty.keyframes['down']
-
-    def select_keyframe(self, dir_x, dir_y):
-        if dir_y < 0:
-            return self.keyframes['down']
-        if dir_y > 0:
-            return self.keyframes['up']
-        if dir_x < 0:
-            return self.keyframes['left']
-        if dir_x > 0:
-            return self.keyframes['right']
-        return None
+        self.looking_dir = [1, 1]
+        self.attach_own_player(AnimationPlayer(self.frames_count, duration=2))
+        self.last_state = self.EntityState.IDLE
 
     def update(self, *args, dt, **kwargs):
-        super(MovementAnimationProperty, self).update(*args, dt=dt, **kwargs)
+        super().update(*args, dt=dt, **kwargs)
         direction = self.moving_prop.direction
-        keyframe = self.select_keyframe(*direction)
-        # Debugger.print('Last, key, start', self.last_keyframe, keyframe, self.starting_frame)
 
-        if keyframe is not None:
-            if self.last_keyframe != keyframe:
-                self.looping = True
-                self.running = True
-                self.starting_frame = keyframe
-            self.last_keyframe = keyframe
+        entity_state = self.EntityState.get_state(self.moving_prop)
+        start_idx_x = 0 if entity_state == self.EntityState.IDLE else 4
+        self.frames_count = 2 if entity_state == self.EntityState.IDLE else 8
+        if self.own_player:
+            self.own_player.duration = 8 if entity_state == self.EntityState.IDLE else 2 * self.moving_prop.speed / 1000
+        # todo vary duration
+
+        if direction.x < 0:
+            self.looking_dir[0] = -1
+        if direction.x > 0:
+            self.looking_dir[0] = 1
+        if direction.y < 0:
+            self.looking_dir[1] = -1
+        if direction.y > 0:
+            self.looking_dir[1] = 1
+
+        if self.looking_dir == [1, -1]:
+            start_idx_y = 0
+        elif self.looking_dir == [-1, -1]:
+            start_idx_y = 2
+        elif self.looking_dir == [-1, 1]:
+            start_idx_y = 3
         else:
-            # stop
-            self.looping = False
-            self.starting_frame = self.last_keyframe
+            start_idx_y = 1
+
+        last_starting_frame = self.starting_frame
+
+        self.starting_frame = start_idx_y * self.sprite_prop.image_meta.columns_count + start_idx_x  # todo
+        if last_starting_frame != self.starting_frame:
+            self.current_frame = self.starting_frame  # todo change!!!!
+
+        debug_msg = f'MoveAnim: dir: {direction}, state: {entity_state}, looking_dir: {self.looking_dir},'
+        debug_msg += f'frames: {self.starting_frame}-{self.starting_frame + self.frames_count} [{start_idx_x}, {start_idx_y}], curr: {self.current_frame}'
+        Debugger.print(debug_msg)
 
 
 class SpriteProperty(RenderProperty):
-    def __init__(self, image, world, position, dimensions=None, columns_count=4, visible=False, stack_layer=0):
+    class Layer(Enum):  # todo refactor somhere
+        FLOOR = 0
+        DETAILS = 1
+        OBJECTS = 2
+
+        @property
+        def layer_id(self):
+            return self.value
+
+    def __init__(self, image_meta, world, position, visible=False, stack_layer=Layer.FLOOR):
+        self.image_meta = image_meta
         self.world = world
         self.stack_layer = stack_layer
-        self.sprite = Sprite()  # no graoup at start = visible False
-        self.sprite.image = image
-        if not dimensions:
-            dimensions = image.get_width(), image.get_height()
-        self.sprite.rect = Rect(position, dimensions)
+        self._sprite = Sprite()  # no group at start = visible False
+        self._sprite.image = self.image_meta.image
+        self._sprite.rect = Rect(position, self.dimensions)
         self.visible = visible
-        self.clip_rect = Rect((0, 0), self.rect.size)
-        self._columns_count = columns_count
+        self.clip_rect = Rect((0, 0), self.dimensions)
+        self._image_index = -1
+        self.image_index = 0  # too to set index and update clip_rect
 
     def __del__(self):
         self.visible = False
 
     @property
     def rect(self):
-        return self.sprite.rect
+        return self._sprite.rect
+
+    @property
+    def dimensions(self):
+        return self.image_meta.tile_size
 
     @property
     def image(self):
-        return self.sprite.image
+        return self._sprite.image
 
     @property
     def visible(self):
         return self._visible
-
-    @property
-    def columns_count(self):
-        return self._columns_count
-
-    @columns_count.setter
-    def columns_count(self, count):
-        self._columns_count = count
-        self.update_clip_rect(0)
 
     @visible.setter
     def visible(self, vis):
@@ -194,20 +220,28 @@ class SpriteProperty(RenderProperty):
         else:
             WorldRenderer.remove_visible_object(self)
 
-    def update_clip_rect(self, index):
-        self.clip_rect.x = self.rect.w * (index % self._columns_count)
-        self.clip_rect.y = self.rect.h * (index // self._columns_count)
+    @property
+    def image_index(self):
+        return self._image_index
+
+    @image_index.setter
+    def image_index(self, index):
+        if self._image_index != index:
+            self._image_index = index
+            img_col, img_row = self.image_meta.column_row_from_index(index)
+            self.clip_rect.x = self.rect.w * img_col
+            self.clip_rect.y = self.rect.h * img_row
 
     def render(self, *args, **kwargs):
         if self.visible:
-            Debugger.rect(self.sprite.rect, 'Red')
-            self.sprite.update(*args, **kwargs)
+            Debugger.rect(self._sprite.rect, 'Red')
+            self._sprite.update(*args, **kwargs)
 
 
 class CollisionProperty(UpdateProperty, RenderProperty):
     """This property doesn't mean object checks collison with other objects.
     Can stand still, only moving objects activate collision check"""
-    INFLATION = -24
+    INFLATION = -10
 
     def __init__(self, parent_rect, world, active=True):
         self.parent_rect = parent_rect
@@ -243,7 +277,7 @@ class CollisionProperty(UpdateProperty, RenderProperty):
 
 class MovingProperty(UpdateProperty):
     def __init__(self, collision_prop, world, ignore_collisions=False):
-        self.speed = 300
+        self.speed = 100
         self.world = world
         self.collision_prop = collision_prop
         self.direction = Vector2(0, 0)

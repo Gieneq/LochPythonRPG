@@ -4,9 +4,9 @@ Lets say to be RPG game. Project ispired by [Zelda in Python](https://www.youtub
 
 ## Devlog
 
-Project in development. Recent screenshot:
+Project in development. Recent state:
 
-![Recent screenshot](img/tibia_2_bushes.png)
+![Recent screenshot](img/anims.gif)
 
 ### Collison detection introduction
 
@@ -65,3 +65,15 @@ So far graphics were only placeholders. Final tilesize is sublimating, probably 
 
 ![Scaled up world](img/tibia_2_scale.png)
 
+### New graphics and animation fixes
+
+Changes:
+
+ - Added new tilesets.
+ - Reworked animation system, now world has its won list of timers. One timer can sontrol water, plants and other similar animations.
+ - Added images metadata to make the code more DRY.
+ - Player (entities) has idle animation state.
+
+There is need for tiles builder and some reuse of common static properties.
+
+![Animated nature and entities screenshot](img/anims.gif)
