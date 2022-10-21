@@ -5,7 +5,7 @@ from pygame import Rect
 from pygame.math import Vector2
 from pygame.sprite import Sprite
 from abc import ABC, abstractmethod
-from core.settings import TILESIZE
+from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS
 
 from core.debug import Debugger
 from core.renderer import WorldRenderer
@@ -171,7 +171,7 @@ class MovementAnimationProperty(AnimationProperty):
         Debugger.print(debug_msg)
 
 
-class SpriteProperty(RenderProperty):
+class SpriteProperty(RenderProperty, UpdateProperty):
     class Layer(Enum):  # todo refactor somhere
         FLOOR = 0
         DETAILS = 1
@@ -232,8 +232,16 @@ class SpriteProperty(RenderProperty):
             self.clip_rect.x = self.rect.w * img_col
             self.clip_rect.y = self.rect.h * img_row
 
+    def update(self, *args, **kwargs):
+        fov_rect = self.world.camera.fov_rect
+        should_be_visible = fov_rect.colliderect(self.rect)
+        if not self.visible and should_be_visible:
+            self.visible = True
+        elif self.visible and not should_be_visible:
+            self.visible = False
+
     def render(self, *args, **kwargs):
-        if self.visible:
+        if self.visible and DEBUG_VISIBLE_OBJECTS:
             Debugger.rect(self._sprite.rect, 'Red')
             self._sprite.update(*args, **kwargs)
 
@@ -241,7 +249,7 @@ class SpriteProperty(RenderProperty):
 class CollisionProperty(UpdateProperty, RenderProperty):
     """This property doesn't mean object checks collison with other objects.
     Can stand still, only moving objects activate collision check"""
-    INFLATION = -10
+    INFLATION = -6
 
     def __init__(self, parent_rect, world, active=True):
         self.parent_rect = parent_rect
@@ -271,7 +279,7 @@ class CollisionProperty(UpdateProperty, RenderProperty):
             self.update_hitbox()
 
     def render(self, *args, **kwargs):
-        if self.active:
+        if self.active and DEBUG_COLLISION_BLOCKS:
             Debugger.rect(self.hitbox, 'Blue')
 
 
@@ -323,8 +331,9 @@ class MovingProperty(UpdateProperty):
 
             obstacles = self.world.get_nearby_obstacles(self.collision_prop)
             Debugger.print('Potential obstacles count', len(obstacles))
-            for obstacle in obstacles:
-                Debugger.rect(obstacle.hitbox, 'Yellow', 3)
+            if DEBUG_COLLISION_BLOCKS:
+                for obstacle in obstacles:
+                    Debugger.rect(obstacle.hitbox, 'Yellow', 2)
 
             translation = direction * self.speed * dt
             self.obstacles_hit, translation = self.eval_collision(translation, obstacles)
@@ -332,8 +341,9 @@ class MovingProperty(UpdateProperty):
             self.collision_prop.parent_rect.x += translation[0]
             self.collision_prop.parent_rect.y += translation[1]
 
-            for obstacle in self.obstacles_hit:
-                Debugger.rect(obstacle.hitbox, 'Yellow', 5)
+            if DEBUG_COLLISION_BLOCKS:
+                for obstacle in self.obstacles_hit:
+                    Debugger.rect(obstacle.hitbox, 'Yellow', 3)
 
             if translation.magnitude() != 0:
                 self.world.on_player_move()

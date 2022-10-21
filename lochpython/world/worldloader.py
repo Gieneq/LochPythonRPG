@@ -59,7 +59,6 @@ if not ImagesLoader.instance:
 loader = ImagesLoader.instance
 
 
-
 class WorldLoader:
     @staticmethod
     def load_csv_map(path):
@@ -75,15 +74,16 @@ class WorldLoader:
     #             surfaces_list.append(img_surf)
     #     return surfaces_list
     @staticmethod
-    def build_water_tile( world, position, idx=0):
+    def build_water_tile(world, position, idx=0):
         floor_tile = GameObject()
 
         image = loader.floor_image
         sprite_prop = SpriteProperty(image, world, position, visible=True, stack_layer=SpriteProperty.Layer.FLOOR)
         sprite_prop.image_index = idx
-        floor_tile.with_sprite(sprite_prop) #todo not repeat, add some common data for static tiles
+        floor_tile.with_sprite(sprite_prop)  # todo not repeat, add some common data for static tiles
         #
-        water_anim_prop = AnimationProperty(sprite_prop, frames_count=world.nature_timer.frames_count, active=True, starting_frame=idx)
+        water_anim_prop = AnimationProperty(sprite_prop, frames_count=world.nature_timer.frames_count, active=True,
+                                            starting_frame=idx)
         water_anim_prop.attach_own_player(world.nature_timer)
         # if idx == 0:
         #     # water tile
@@ -98,7 +98,6 @@ class WorldLoader:
     def load_test_map(world):
         # todo better but still bad, move out to database
         # image = pygame.image.load('./data/graphics/floor.png').convert_alpha()
-
 
         floor_data = WorldLoader.load_csv_map('./data/maps/first_map/floor.csv')
         details_data = WorldLoader.load_csv_map('./data/maps/first_map/details.csv')
@@ -123,20 +122,17 @@ class WorldLoader:
             for col_idx, col in enumerate(row):
                 x = col_idx * TILESIZE
                 y = row_idx * TILESIZE
-
-                if x > 1000 or y > 1000:
-                    continue
                 idx = int(col)
                 if idx == 0 or idx == 15:
-                    floor_tile = WorldLoader.build_water_tile(world, (x,y), idx)
+                    floor_tile = WorldLoader.build_water_tile(world, (x, y), idx)
                 else:
                     floor_tile = GameObject()
-                    sprite_prop = SpriteProperty(loader.floor_image, world, (x, y), visible=True, stack_layer=SpriteProperty.Layer.DETAILS)
+                    sprite_prop = SpriteProperty(loader.floor_image, world, (x, y), visible=True,
+                                                 stack_layer=SpriteProperty.Layer.DETAILS)
                     sprite_prop.image_index = idx
                     floor_tile.with_sprite(sprite_prop)
 
                 # todo indicate tile is animated, some need for metadata 😒
-
 
                 world.floor.append(floor_tile)
 
@@ -147,15 +143,13 @@ class WorldLoader:
                 for col_idx, col in enumerate(row):
                     x = col_idx * TILESIZE
                     y = row_idx * TILESIZE
-
-                    if x > 1000 or y > 1000:
-                        continue
                     idx = int(col)
                     if idx == -1:
                         continue
                     detail_tile = GameObject()
                     image_meta = loader.floor_image
-                    sprite_prop = SpriteProperty(image_meta, world, (x, y), visible=True, stack_layer=SpriteProperty.Layer.DETAILS)
+                    sprite_prop = SpriteProperty(image_meta, world, (x, y), visible=True,
+                                                 stack_layer=SpriteProperty.Layer.DETAILS)
                     sprite_prop.image_index = idx
                     detail_tile.with_sprite(sprite_prop)
 
@@ -167,35 +161,33 @@ class WorldLoader:
                 x = col_idx * TILESIZE
                 y = row_idx * TILESIZE
                 idx = int(col)
-                image = loader.objects_image
-                object_tile = GameObject()
-                sprite_prop = SpriteProperty(image, world, (x, y), visible=True, stack_layer=SpriteProperty.Layer.OBJECTS)
-                sprite_prop.image_index = idx
-                object_tile.with_sprite(sprite_prop)
+                if idx > -1:
+                    image = loader.objects_image
+                    object_tile = GameObject()
+                    sprite_prop = SpriteProperty(image, world, (x, y), visible=True,
+                                                 stack_layer=SpriteProperty.Layer.DETAILS)
+                    sprite_prop.image_index = idx
+                    collide_prop = CollisionProperty(sprite_prop.rect, world)
+                    object_tile.with_sprite(sprite_prop).with_collision(collide_prop)
 
-                if x > 1000 or y > 1000:
-                    continue
-                if idx == 0 or idx == 4:
-                    # bush
-                    anim_prop = AnimationProperty(sprite_prop, active=True, starting_frame=idx, frames_count=3)
-                    anim_prop.attach_own_player(AnimationPlayer(anim_prop.frames_count, duration=4))
-                    object_tile.with_animation(anim_prop)
+                    if idx == 0 or idx == 4:
+                        # bush
+                        anim_prop = AnimationProperty(sprite_prop, active=True, starting_frame=idx, frames_count=3)
+                        anim_prop.attach_own_player(AnimationPlayer(anim_prop.frames_count, duration=4))
+                        object_tile.with_animation(anim_prop)
 
-                elif idx == 8 or idx == 10:
-                    # flowers
-                    anim_prop = AnimationProperty(sprite_prop, active=True, starting_frame=idx, frames_count=2)
-                    anim_prop.attach_own_player(AnimationPlayer(anim_prop.frames_count, duration=4))
-                    object_tile.with_animation(anim_prop)
-                world.entities.append(object_tile)
+                    elif idx == 8 or idx == 10:
+                        # flowers
+                        anim_prop = AnimationProperty(sprite_prop, active=True, starting_frame=idx, frames_count=2)
+                        anim_prop.attach_own_player(AnimationPlayer(anim_prop.frames_count, duration=4))
+                        object_tile.with_animation(anim_prop)
+                    world.entities.append(object_tile)
 
         # limits
         for row_idx, row in enumerate(limit_data):
             for col_idx, col in enumerate(row):
                 x = col_idx * TILESIZE
                 y = row_idx * TILESIZE
-
-                if x > 1000 or y > 1000:
-                    continue
                 if col != '-1':
                     limit_rect = pygame.Rect((x, y), (TILESIZE, TILESIZE))
                     limit_block = GameObject().with_collision(CollisionProperty(limit_rect, world))

@@ -16,6 +16,9 @@ class Debugger:
             cls.rects.append((rect, color, border))
 
     @classmethod
-    def clear(cls):
-        cls.debug_lines.clear()
+    def clear_rects(cls):
         cls.rects.clear()
+
+    @classmethod
+    def clear_gui(cls):
+        cls.debug_lines.clear()

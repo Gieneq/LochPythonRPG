@@ -1,5 +1,4 @@
-import pygame
-from pygame import Rect, Surface
+from functools import reduce
 
 from lochpython.core.debug import Debugger
 from lochpython.core.settings import *
@@ -52,25 +51,20 @@ class MainRenderer:
         print(cls.world_surface)
         # print(cls.display_surface == screen)
 
-
-
     @classmethod
     def render(cls):
         cls.display_surface.fill('black')
         cls.world_surface.fill('black')
         WorldRenderer.render()
-
-
-
-
+        DebugRenderer.render_in_world()
 
         # pygame.transform.scale2x(surface=cls.world_surface, dest_surface=cls.display_surface)
         # cls.display_surface.blit(cls.display_surface, cls.rendering_rect)
-        pygame.transform.scale(surface=cls.world_surface, size=(DISPLAY_WIDTH,DISPLAY_HEIGHT), dest_surface=cls.display_surface)
+        pygame.transform.scale(surface=cls.world_surface, size=(DISPLAY_WIDTH, DISPLAY_HEIGHT),
+                               dest_surface=cls.display_surface)
         cls.display_surface.blit(cls.display_surface, cls.rendering_rect)
 
-
-        DebugRenderer.render()
+        DebugRenderer.render_in_gui()
         pygame.display.update()
 
 
@@ -102,14 +96,9 @@ class WorldRenderer:
 
     @classmethod
     def render(cls):
-        Debugger.print(f"Cam: {cls.world.camera}")
         for layer in cls.stack:
             layer.attach_camera(cls.world.camera)
             layer.draw(MainRenderer.world_surface)
-        Debugger.print(f'Visible_objects count: {len(cls.entity_objects)}')
-        Debugger.print(f'Obstacle_objects count: {len(cls.world.limit_blocks)}')
-        # MainRenderer.world_surface.blit(MainRenderer.world_surface,
-        #                                 Rect((0, 0), (HALF_WIDTH // 2, HALF_HEIGHT // 2)))
 
     @classmethod
     def sort_order(cls):
@@ -117,6 +106,11 @@ class WorldRenderer:
         sorted_objects = sorted(cls.entity_objects, key=lambda x: x.rect.centery)  # todo
         cls.entity_objects.clear()
         cls.entity_objects.extend(sorted_objects)
+
+    @classmethod
+    @property
+    def visible_objects_count(cls):
+        return reduce(lambda a, b: a + len(b), cls.stack, 0)
 
 
 class DebugRenderer:
@@ -142,13 +136,8 @@ class DebugRenderer:
         cls.camera = camera
 
     @classmethod
-    def render(cls):
+    def render_in_gui(cls):
         if DEBUG:
-            translation = sub_tuples_2D(cls.camera, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
-            for rect, color, border in cls._debugger.rects:
-                translated_rect = rect.move(-translation[0], -translation[1])
-                pygame.draw.rect(MainRenderer.world_surface, color, translated_rect, border)
-
             for i_y, line in enumerate(cls._debugger.debug_lines):
                 line = f"{i_y}:   {line}" if cls.numbering else line
                 text_surface = cls.font.render(line, True, 'White')
@@ -158,4 +147,15 @@ class DebugRenderer:
                 MainRenderer.display_surface.blit(text_surface, text_rect)
 
             # consider extracting
-            cls._debugger.clear()
+            cls._debugger.clear_gui()
+
+    @classmethod
+    def render_in_world(cls):
+        if DEBUG:
+            translation = sub_tuples_2D(cls.camera, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
+            for rect, color, border in cls._debugger.rects:
+                translated_rect = rect.move(-translation[0], -translation[1])
+                pygame.draw.rect(MainRenderer.world_surface, color, translated_rect, border)
+
+            # consider extracting
+            cls._debugger.clear_rects()

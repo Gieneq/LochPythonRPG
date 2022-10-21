@@ -23,7 +23,7 @@ class Game:
         pygame.init()
 
         # setup window
-        pygame.display.set_caption(WINDOW_TITLE) #tod omove to settings
+        pygame.display.set_caption(WINDOW_TITLE)  # tod omove to settings
 
         # setup game update
         self.clock = pygame.time.Clock()
@@ -54,15 +54,16 @@ class Game:
         Debugger.print(f"AnimationTimers: {AnimationPlayer.total_players}")
         Debugger.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
         Debugger.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
+        Debugger.print(f'Visible_objects count: {renderer.WorldRenderer.visible_objects_count}')
+        Debugger.print(f'Obstacle_objects count: {self.world.limit_blocks_count}')
         self.world.update(dt)
 
     def render(self):
         self.world.render()
         renderer.MainRenderer.render()
 
-
     def start(self):
-        update_timer = NanoTimer(init_delta_s=1/FPS)
+        update_timer = NanoTimer(init_delta_s=1 / FPS)
         benchmarking_timer = NanoTimer()
         benchmark_delta_s = {
             'input': ValueFilter(),
@@ -79,6 +80,7 @@ class Game:
             Debugger.print(benchmarking_msg)
             self.render()
             benchmark_delta_s['render'].push_value(benchmarking_timer.start().last_delta_ns)
-            benchmarking_msg = f"Bench: {[(k, str(round(v.median*1e-6,3)).rjust(6, '0')) for k, v in benchmark_delta_s.items()]}[ms]"
+            sum_time = sum([v.median * 1e-6 for v in benchmark_delta_s.values()])
+            benchmarking_msg = f"Bench: {[(k, str(round(v.median * 1e-6, 1)).rjust(6, '0')) for k, v in benchmark_delta_s.items()]}, total: {round(sum_time, 1)}[ms]"
             self.clock.tick(FPS)
             update_timer.start()

@@ -2,11 +2,13 @@ from math import sqrt
 
 from pygame import Rect
 from pygame.math import Vector2
+
+from core.debug import Debugger
 from core.utils import distance_squared, radius_squared_from_rect
 from objects.property import Props, AnimationPlayer
 from world.worldloader import WorldLoader
 from core.renderer import WorldRenderer
-from core.settings import COLLISION_RANGE
+from core.settings import COLLISION_RANGE, RENDERING_HEIGHT, RENDERING_WIDTH, FOV_OFFSET
 
 
 class Camera(Vector2):
@@ -18,6 +20,7 @@ class Camera(Vector2):
         self.velocity = Vector2(0, 0)
         self.focused_rect = None
         self.speed = 4.5
+        self.fov_rect = Rect(focus_point, (RENDERING_WIDTH, RENDERING_HEIGHT))
 
     def focus_on_entity(self, rect, refresh=True):
         self.focused_rect = rect
@@ -33,6 +36,10 @@ class Camera(Vector2):
         else:
             self.xy += dt * self.velocity
             self.velocity = (self.target_pos - self.xy) * self.speed
+
+        self.fov_rect.w, self.fov_rect.h = RENDERING_WIDTH, RENDERING_HEIGHT
+        self.fov_rect.centerx, self.fov_rect.centery = self.xy
+        self.fov_rect = self.fov_rect.inflate(FOV_OFFSET, FOV_OFFSET)
 
     def __str__(self):
         return f"Looking at: {self.focused_rect} {self.target_pos}, has pos: {self.xy}, vel: {self.velocity}"
@@ -63,7 +70,7 @@ class World:
         self.limit_blocks = Layer()
 
         self.global_timers = []
-        self.nature_timer = AnimationPlayer(frames_count=4, duration=5) #todo
+        self.nature_timer = AnimationPlayer(frames_count=4, duration=5)  # todo
         self.global_timers.append(self.nature_timer)
 
         self.stack = Layer([self.floor, self.floor_details, self.entities, self.limit_blocks])
@@ -75,7 +82,6 @@ class World:
         self.camera = Camera()
         self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)
 
-
     def input(self):
         self.stack.input()
 
@@ -84,6 +90,10 @@ class World:
         self.camera.update_camera(dt=dt)
         for global_timer in self.global_timers:
             global_timer.update(dt=dt)
+
+        # FOV
+        # fov_rect = self.camera.get_field_of_view()
+        # done inside sprite property - toggle visible
 
     def render(self):
         self.stack.render()
@@ -105,3 +115,7 @@ class World:
 
         potentially_colliding_objects = list(potentially_colliding_objects)
         return potentially_colliding_objects
+
+    @property
+    def limit_blocks_count(self):
+        return len(self.colliding_objects)
