@@ -6,7 +6,7 @@ Lets say to be RPG game. Project ispired by [Zelda in Python](https://www.youtub
 
 Project in development. Recent state:
 
-![Recent screenshot](img/anims.gif)
+![Recent state](img/beach_grass.gif)
 
 ### Collison detection introduction
 
@@ -76,4 +76,12 @@ Changes:
 
 There is need for tiles builder and some reuse of common static properties.
 
-![Animated nature and entities screenshot](img/anims.gif)
+![Animated nature and entities](img/anims.gif)
+
+Added another graphics, some of them needs tweaks and changes but it is not important.
+
+Tiled was used to prepare map. There is need to create height layers and stack floor details.
+
+![Tiled editor](img/tiled_editor.JPG)
+
+![Animated nature and shore](img/beach_grass.gif)

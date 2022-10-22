@@ -75,7 +75,7 @@ class AnimationProperty(UpdateProperty):
         self.starting_frame = starting_frame
         self.looping = looping
         self.active = active
-        self.own_player = None
+        self.own_player = None #todo default animation player?
 
     def attach_own_player(self, player):
         self.own_player = player
@@ -137,7 +137,7 @@ class MovementAnimationProperty(AnimationProperty):
 
         entity_state = self.EntityState.get_state(self.moving_prop)
         start_idx_x = 0 if entity_state == self.EntityState.IDLE else 4
-        self.frames_count = 2 if entity_state == self.EntityState.IDLE else 8
+        self.frames_count = 4 if entity_state == self.EntityState.IDLE else 8
         if self.own_player:
             self.own_player.duration = 8 if entity_state == self.EntityState.IDLE else 2 * self.moving_prop.speed / 1000
         # todo vary duration
