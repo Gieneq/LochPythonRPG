@@ -4,6 +4,38 @@ from time import time_ns
 NEARLY_ZERO = 1e-6
 
 
+class StackXY:
+    def __init__(self, width, height, initial=0):
+        self.stack = [[initial] * width] * height
+
+    def get_stack(self, x, y):
+        return self.stack[y][x]
+
+    def get_top_stack(self, x, y):
+        stack = self.get_stack(x, y)
+        if stack:
+            return stack[-1]
+        return None
+
+    def get_bottom_stack(self, x, y):
+        stack = self.get_stack(x, y)
+        if stack:
+            return stack[0]
+        return None
+
+    def push_top(self, x, y, value):
+        self.get_stack(x, y).append(value)
+
+    def pop_top(self, x, y):
+        stack = self.get_stack(x, y)
+        if stack:
+            return stack.pop()
+        return None
+
+    def __str__(self):
+        return ',\n'.join([str(row) for row in self.stack])
+
+
 class NanoTimer:
     def __init__(self, init_delta_s=None):
         self.last_time_ns = time_ns()

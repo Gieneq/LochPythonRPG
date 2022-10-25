@@ -1,3 +1,4 @@
+import csv
 import os
 from functools import reduce
 
@@ -6,7 +7,8 @@ from core.settings import GRAPHICS_TILESETS_PATHS, GRAPHICS_ENTITIES_PATHS, MAPS
 from itertools import chain
 import xml.etree.ElementTree as et
 
-from files.path import get_resource_abs_path, filter_path_by_type
+from core.utils import StackXY
+from files.path import get_resource_abs_path, filter_path_by_type, remove_extension
 
 
 class ImageMeta:
@@ -42,17 +44,8 @@ class ImageMeta:
     def __str__(self):
         return f"Image meta of {self.name_id}, grid: {self.grid_size}, tsize: {self.tile_size}"
 
+class TilesetLoader:
 
-class ImagesLoader:
-    instance = None
-
-    def get_map_data(self, map_dir_path):
-        print('Extracting', map_dir_path)
-        _, map_dirs = get_resource_abs_path(map_dir_path)
-        some_dir = list(map_dirs)[0]
-        content_filenames, content_paths = get_resource_abs_path(some_dir)
-        print(*content_paths)
-        print(*content_filenames)
 
     def meta_from_image(self, tsx_filepath):
         tsx_tree = et.parse(tsx_filepath)
@@ -73,27 +66,90 @@ class ImagesLoader:
         return tileset_attribs['name'], meta
 
     def get_graphics_meta(self, path):
-        paths = list(get_resource_abs_path(path)[1])
+        paths = get_resource_abs_path(path)
         image_paths = [*filter_path_by_type(paths, 'png')]
         meta_paths = [*filter_path_by_type(paths, 'tsx')]
         if len(image_paths) != len(meta_paths):
             raise FileNotFoundError(f'Some resources files are missing in {path}')
-        return dict(map(lambda p: self.meta_from_image(p), meta_paths))
+        return dict(map(lambda p: self.meta_from_image(p[1]), meta_paths))
+    def __init__(self):
+        tileset_info = self.get_graphics_meta(GRAPHICS_TILESETS_PATHS)
+        print(*tileset_info.items(), sep='\n')
+
+
+class MapLoader:
+
+    def load_map(self, file_name, file_path):
+        map_tree = et.parse(file_path)
+        map_tree_root = map_tree.getroot()
+        map_tree_attribs = map_tree_root.attrib
+
+        map_meta = {
+            'name' :remove_extension(file_name),
+            'path': file_path,
+            'grid_size': (int(map_tree_attribs['width']), int(map_tree_attribs['height'])),
+            'tile_size': (int(map_tree_attribs['tilewidth']), int(map_tree_attribs['tileheight'])),
+        }
+        # print(map_meta)
+
+        # tilesets - moze przyspieszy wyszukiwanie ale niekoniecznie
+        map_tileset_nodes = map_tree_root.findall('tileset') # needs info about tilesets
+        # print(map_tileset_nodes)
+
+        # groups
+        map_group_nodes = map_tree_root.findall('group')
+        # print(map_group_nodes)
+
+        map_data = [0]*len(map_group_nodes)
+
+        for map_group_node in map_group_nodes:
+            elevation_index = int(map_group_node.attrib['name'].split('_')[1])
+            # print('Elevation:', elevation_index)
+            layers = map_group_node.findall('layer')
+            layers_stack = [None]*len(layers)
+
+            for layer in layers:
+                # print(layer)
+                layer_index = int(layer.attrib['name'].split('_')[0])
+                layer_csv_raw = layer.findall('data')[0]
+                layer_csv = list(csv.reader(layer_csv_raw.text.strip().split('\n')))
+                # layer_csv = [int(item) for row in layer_csv for item in row if item]
+                layer_csv = [[int(item) for item in row if item] for row in layer_csv]
+                layers_stack[layer_index] = layer_csv
+            # print(*layers_stack)
+            map_data[elevation_index] = layers_stack
+        return {
+            'meta':map_meta,
+            'data':map_data
+        }
+
 
     def __init__(self):
-        graphics_meta = {
-            'tilesets': self.get_graphics_meta(GRAPHICS_TILESETS_PATHS),
-            'entities': self.get_graphics_meta(GRAPHICS_ENTITIES_PATHS)
-        }
-        print(graphics_meta)
+        maps = dict()
+        for filename, path in get_resource_abs_path(MAPS_PATH):
+            maps[remove_extension(filename)] = self.load_map(filename, path)
+        # print(*maps.items(), sep='\n')
+        print(maps['testmap']['meta'])
 
-        maps_da = self.get_map_data(MAPS_PATH)
+
+
+class Loader:
+    instance = None
+
+
+    def __init__(self):
+        print('MAP')
+        MapLoader()
+        print()
+        print('TILES')
+        TilesetLoader()
+        print()
 
     def _load_image(cls, path, name_id, grid_size=(1, 1), with_alpha=True):
         image = pygame.image.load(path).convert_alpha()  # todo
         return ImageMeta(name_id=name_id, path=path, image=image, grid_size=grid_size)
 
 
-if not ImagesLoader.instance:
-    ImagesLoader.instance = ImagesLoader()
-loader = ImagesLoader.instance
+if not Loader.instance:
+    Loader.instance = Loader()
+loader = Loader.instance
