@@ -1,9 +1,5 @@
 import math
-from csv import reader
-from os import walk
 from time import time_ns
-
-import pygame.image
 
 NEARLY_ZERO = 1e-6
 
@@ -11,7 +7,7 @@ NEARLY_ZERO = 1e-6
 class NanoTimer:
     def __init__(self, init_delta_s=None):
         self.last_time_ns = time_ns()
-        self.last_delta_ns = init_delta_s*1e9 if init_delta_s else float(NEARLY_ZERO)
+        self.last_delta_ns = init_delta_s * 1e9 if init_delta_s else float(NEARLY_ZERO)
 
     @staticmethod
     def ns_to_s(ns):
@@ -56,8 +52,8 @@ def distance(p1, p2):
 
 
 class ValueFilter:
-    def __init__(self,  size=16):
-        self.buffer = [0]*size
+    def __init__(self, size=16):
+        self.buffer = [0] * size
         self.idx = 0
 
     def push_value(self, v):
@@ -70,8 +66,7 @@ class ValueFilter:
 
     @property
     def median(self):
-        return sorted(self.buffer)[len(self.buffer)//2]
+        return sorted(self.buffer)[len(self.buffer) // 2]
 
     def __str__(self):
         return str(self.average)
-
