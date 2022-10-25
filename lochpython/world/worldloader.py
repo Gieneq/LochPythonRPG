@@ -5,64 +5,6 @@ from objects.go import GameObject
 from objects.property import Props, SpriteProperty, CollisionProperty, MovingProperty, WSADDriven, AnimationProperty, \
     MovementAnimationProperty, AnimationPlayer
 
-
-class ImageMeta:
-    def __init__(self, name_id, path, image, grid_size=(1, 1)):
-        self.name_id = name_id
-        self.image = image
-        self.path = path
-        self.tile_size = (image.get_width() / grid_size[0], image.get_height() / grid_size[1])
-        self.grid_size = grid_size
-
-    @property
-    def columns_count(self):
-        return self.grid_size[0]
-
-    @property
-    def rows_count(self):
-        return self.grid_size[1]
-
-    @property
-    def tile_width(self):
-        return self.tile_size[0]
-
-    @property
-    def tile_height(self):
-        return self.tile_size[1]
-
-    def column_row_from_index(self, index):
-        return index % self.columns_count, index // self.columns_count
-
-    def index_from_column_row(self, column, row):
-        return row * self.columns_count + column
-
-    @classmethod
-    def load_image(cls, path, name_id, grid_size=(1, 1), with_alpha=True):
-        image = pygame.image.load(path).convert_alpha()  # todo
-        return cls(name_id=name_id, path=path, image=image, grid_size=grid_size)
-
-    def __str__(self):
-        return f"Image meta of {self.name_id}, grid: {self.grid_size}, tsize: {self.tile_size}"
-
-
-class ImagesLoader:
-    instance = None
-
-    def __init__(self):
-        self.floor_image = ImageMeta.load_image('./data/tilesets/floor.png', 'floor', (15, 15))
-        self.details_image = ImageMeta.load_image('./data/tilesets/details.png', 'details', (15, 15))
-        self.objects_image = ImageMeta.load_image('./data/tilesets/objects.png', 'objects_1x1', (15, 15))
-        self.objects_1x2_image = ImageMeta.load_image('./data/tilesets/objects_1x2.png', 'objects_1x2', (15, 7.5))
-        self.player_image = ImageMeta.load_image('./data/entities/player.png', 'player', (12, 4))
-        # todo load info about tileset
-        # todo player animations etc
-
-
-if not ImagesLoader.instance:
-    ImagesLoader.instance = ImagesLoader()
-loader = ImagesLoader.instance
-
-
 class WorldLoader:
     @staticmethod
     def load_csv_map(path):
