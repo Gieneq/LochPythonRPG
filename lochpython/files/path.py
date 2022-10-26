@@ -1,27 +1,32 @@
 import os
+from typing import NamedTuple
+from core import settings
 
-from core.settings import IGNORE_WORKSPACE_DIR
 
 def remove_extension(file_name):
     return file_name.split('.')[0]
 
-def load_dirs(resource_dir):
-    return os.listdir(resource_dir)
+class ResourceFiles:
+    TILESETS = settings.GRAPHICS_TILESETS_PATHS
+    ENTITIES = settings.GRAPHICS_ENTITIES_PATHS
+    MAPS = settings.MAPS_PATH
+    File = NamedTuple('File', [('name', str), ('abs_path', str)])
 
+    def __init__(self, root):
+        self.root = root
+        self.ignore_workspace = True
 
-def ignore_workspace(paths):
-    return list(filter(lambda path: path != IGNORE_WORKSPACE_DIR, paths))
+    def get_childs_names(self):
+        child_dirs = os.listdir(self.root)
+        child_dirs = list(filter(lambda path: path != settings.IGNORE_WORKSPACE_DIR, child_dirs))
+        return child_dirs
 
+    def get_files(self, file_type) -> list[File]:
+        file_type = file_type.lower()
+        childs_names = self.get_childs_names()
+        filered_childs_names = [child_name for child_name in childs_names if child_name.lower().endswith(file_type)]
+        return [self.File(name=child_name, abs_path=os.path.join(self.root, child_name)) for child_name in
+                filered_childs_names]
 
-def build_abs_paths(parent, children):
-    return list(os.path.join(parent, child) for child in children)
-
-
-def get_resource_abs_path(resource_dir):
-    resulting_dirs = list(ignore_workspace(load_dirs(resource_dir)))
-    return list(zip(resulting_dirs, build_abs_paths(resource_dir, resulting_dirs)))
-
-
-def filter_path_by_type(paths_tuple, filetype):
-    filetype_lower = filetype.lower()
-    return [path for path in paths_tuple if path[0].lower().endswith(filetype_lower)]
+    def get_tsx_files(self):
+        return self.get_files('tsx')

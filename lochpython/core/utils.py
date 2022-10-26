@@ -102,3 +102,27 @@ class ValueFilter:
 
     def __str__(self):
         return str(self.average)
+
+
+def is_container(value):
+    for options in (list, dict, tuple):
+        if isinstance(value, options):
+            return True
+    return False
+
+
+def nested_print(data, indent=0, tab=' '):
+    if isinstance(data, dict):
+        print(tab * indent + '{')
+        for key, value in data.items():
+            print(tab * indent + str(key), end=': ')
+            nested_print(value, indent + 1)
+        print(tab * indent + '}')
+
+    elif isinstance(data, list) or isinstance(data, tuple):
+        print(tab * indent + '[')
+        for value in data:
+            nested_print(value, indent + 1)
+        print(tab * indent + ']')
+    else:
+        print(tab * indent + str(data))
