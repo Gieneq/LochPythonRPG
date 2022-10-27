@@ -181,12 +181,12 @@ class SpriteProperty(RenderProperty, UpdateProperty):
         def layer_id(self):
             return self.value
 
-    def __init__(self, image_meta, world, position, visible=False, stack_layer=Layer.FLOOR):
-        self.image_meta = image_meta
+    def __init__(self, image_data, world, position, visible=False, stack_layer=Layer.FLOOR):
+        self.image_data = image_data
         self.world = world
         self.stack_layer = stack_layer
         self._sprite = Sprite()  # no group at start = visible False
-        self._sprite.image = self.image_meta.image
+        self._sprite.image = self.image_data.surface
         self._sprite.rect = Rect(position, self.dimensions)
         self.visible = visible
         self.clip_rect = Rect((0, 0), self.dimensions)
@@ -202,7 +202,7 @@ class SpriteProperty(RenderProperty, UpdateProperty):
 
     @property
     def dimensions(self):
-        return self.image_meta.tile_size
+        return self.image_data.tile_size
 
     @property
     def image(self):
@@ -228,7 +228,7 @@ class SpriteProperty(RenderProperty, UpdateProperty):
     def image_index(self, index):
         if self._image_index != index:
             self._image_index = index
-            img_col, img_row = self.image_meta.column_row_from_index(index)
+            img_col, img_row = self.image_data.column_row_from_local_index(index)
             self.clip_rect.x = self.rect.w * img_col
             self.clip_rect.y = self.rect.h * img_row
 

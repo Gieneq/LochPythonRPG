@@ -3,6 +3,8 @@ import os
 import pygame
 from pygame.rect import Rect
 import xml.etree.ElementTree as et
+
+from core.utils import StackXY
 from files.path import ResourceFiles, remove_extension
 
 
@@ -89,7 +91,7 @@ class TileProperties:
 
     def add_collision_rect(self, collision_rect):
         if isinstance(collision_rect, Rect):
-            self.animation.append(collision_rect)
+            self.collision_rects.append(collision_rect)
         else:
             raise ValueError(f"Collision_rect should be instance of {Rect}")
 
@@ -133,105 +135,120 @@ class Tileset:
         return cls(TilesetData.from_tsx_file(abs_tsx_filepath), TileProperties.dict_from_tsx_file(abs_tsx_filepath))
 
     def __str__(self):
-        return f"{self.tileset_data} with properties: \n - " + "\n - ".join(f"{key}: {value}" for key, value in self.tiles_properties.items()) + '\n'
+        return f"{self.tileset_data} with properties: \n - " + "\n - ".join(
+            f"{key}: {value}" for key, value in self.tiles_properties.items()) + '\n'
 
+
+class RegionMap:
+    class Elevation:
+        def __init__(self, name, width, height):
+            self.name = name
+            self.stack = StackXY(width, height, initial=0)
+
+        def __str__(self):
+            return f"Elevation {self.name}: {self.stack}. Stacked counts: \n{self.stack.print_stack_counts(indentation='  ' * 2)}"
+
+    def __init__(self, path, map_size, tile_size):
+        self.path = path
+        self.map_size = map_size
+        self.tile_size = tile_size
+        self.global_ids = dict()
+        self.elevations = []
+
+    def add_global_id(self, tileset_name, ids_range):
+        self.global_ids[tileset_name] = ids_range
+
+    def setup_elevations(self, count):
+        self.elevations = [None] * count
+
+    def add_elevation(self, elevation_idx, elevation: Elevation):
+        self.elevations[elevation_idx] = elevation
+
+    def __str__(self):
+        lines = f"RegionMap {self.path} with {len(self.elevations)} elevations. Size {self.map_size}, used GIDS: \n - "
+        lines += '\n - '.join(f"{name}: {gids_range}" for name, gids_range in self.global_ids.items()) + '\n'
+        lines += f"Elevations {len(self.elevations)}: \n - "
+        lines += '\n - '.join(f"{idx}: {e}" for idx, e in enumerate(self.elevations))
+        return lines
+
+    @classmethod
+    def from_tsx_file(cls, abs_tmx_filepath, tilesets):
+        print(abs_tmx_filepath)
+        map_node = et.parse(abs_tmx_filepath).getroot()
+        map_attribs = map_node.attrib
+        path = abs_tmx_filepath
+        map_size = (int(map_attribs['width']), int(map_attribs['height']))
+        tile_size = (int(map_attribs['tilewidth']), int(map_attribs['tileheight']))
+        print(path)
+
+        region_map = cls(path, map_size, tile_size)
+
+        for tileset_gid_node in map_node.findall('tileset'):
+            gid_attribs = tileset_gid_node.attrib
+            tileset_name = remove_extension(gid_attribs['source'].split('/')[-1])
+            gid_start = int(gid_attribs['firstgid'])
+            gid_range = range(gid_start, tilesets.get(tileset_name).tileset_data.tiles_count + gid_start)
+            region_map.add_global_id(tileset_name, gid_range)
+
+        # elevation is stack of layers - flatten group
+        elevations = map_node.findall('group')
+
+        region_map.setup_elevations(len(elevations))
+        for elevation_node in elevations:
+            elevation_name = elevation_node.attrib['name']
+            elevation_idx = int(elevation_name.strip().split('_')[1])
+            elevation = cls.Elevation(elevation_name, *region_map.map_size)
+            region_map.add_elevation(elevation_idx, elevation)
+
+            layers_nodes = [(int(layer.attrib['name'].split('_')[0]), layer) for layer in elevation_node.findall('layer')]
+            layers_nodes.sort(key=lambda x:x[0])
+            for idx, layer in layers_nodes:
+                layer_csv_rows = layer.find('data').text.strip().split(',\n')
+                for index_y, csv_row in enumerate(layer_csv_rows):
+                    items = list(int(item) for item in csv_row.strip().split(','))
+                    for index_x, item in enumerate(items):
+                        if item > 0:
+                            elevation.stack.push_top(index_x, index_y, item)
+
+        return region_map
 
 
 class Loader:
+    """
+    Tileset resources:
+     loader.tilset.get('floor').tileset_data.tile_size # name, path, with_alpha, surface, tile_size, grid_size, image_size, tiles_count
+     loader.tilset.get('floor').tileset_properties.get(0).animation # collision_rects
+    """
     instance = None
 
     def __init__(self):
         tilesets_resource_txs_files = ResourceFiles(ResourceFiles.TILESETS).get_tsx_files()
-        self.tilesets = dict([(remove_extension(file.name), Tileset.from_tsx_file(file.abs_path)) for file in tilesets_resource_txs_files])
-        print(*self.tilesets.values(), sep='\n')
+        self.tilesets = dict([(remove_extension(file.name), Tileset.from_tsx_file(file.abs_path)) for file in
+                              tilesets_resource_txs_files])
 
-    # def decode_local_index(self, map_name, map_index):
-    #     tilesets_ranges = self.maps[map_name]['meta']['index_ranges'].items()
-    #     for tileset_name, indices_range in tilesets_ranges:
-    #         if map_index in indices_range:
-    #             # warning - counting from 1, 0 means missing
-    #             local_index = map_index - indices_range.start + 1
-    #             return local_index, indices_range, tileset_name
-    #     return None
+        maps_resource_tms_files = ResourceFiles(ResourceFiles.MAPS).get_tmx_files()
+        print(maps_resource_tms_files[0].abs_path)
+        self.maps = dict(
+            [(remove_extension(file.name), RegionMap.from_tsx_file(file.abs_path, self.tilesets)) for file in
+             maps_resource_tms_files])
+        # for region_map_name, region_map_data in self.maps.items():
+        #     print(region_map_name, region_map_data)
 
-    # def get_tileset(self, tileset_name):
-    #     return self.tiles.get(tileset_name, None)
+        # print(self.decode_local_index('testmap', 450))
 
-    # def get_tileset_index_data(self, local_index):
-    #     return self.tiles.get(tileset_name, None)
-    # def get_map_meta(self, tileset_name):
-    #     return self.tiles.get(tileset_name, None)
+    def decode_local_index(self, map_name, map_index):
+        map_ragion = self.maps.get(map_name)
+        if not map_ragion:
+            raise FileNotFoundError(f"Missing map {map_name}")
+
+        for tileset_name, indices_range in map_ragion.global_ids.items():
+            if map_index in indices_range:
+                # be aware - counting from 1, 0 means missing
+                local_index = map_index - indices_range.start + 1
+                return local_index, indices_range, tileset_name
+        return None
 
 
 if not Loader.instance:
     Loader.instance = Loader()
 loader = Loader.instance
-
-
-
-
-
-
-# def load_map(self, file_name, file_path, tiles_data):
-#     map_tree = et.parse(file_path)
-#     map_tree_root = map_tree.getroot()
-#     map_tree_attribs = map_tree_root.attrib
-#
-#     map_meta = {
-#         'name': remove_extension(file_name),
-#         'path': file_path,
-#         'grid_size': (int(map_tree_attribs['width']), int(map_tree_attribs['height'])),
-#         'tile_size': (int(map_tree_attribs['tilewidth']), int(map_tree_attribs['tileheight'])),
-#     }
-#
-#     # tilesets - moze przyspieszy wyszukiwanie ale niekoniecznie
-#     tilesets_index_ranges = dict()
-#     map_tileset_nodes = map_tree_root.findall('tileset')  # needs info about tilesets
-#     for map_tileset_node in map_tileset_nodes:
-#         tileset_attribs = map_tileset_node.attrib
-#         tileset_fgid = int(tileset_attribs['firstgid'])
-#         tilset_name = tileset_attribs['source'].strip().split('/')[-1].split('.')[0]
-#         if tilset_name in tiles_data:
-#             grid_size = tiles_data[tilset_name]['grid_size']
-#             tiles_count = grid_size[0] * grid_size[1]
-#             print(tiles_data[tilset_name])
-#             tilesets_index_ranges[tilset_name] = range(tileset_fgid, tileset_fgid + tiles_count)
-#         else:
-#             raise FileNotFoundError('Missing tileset file:', tilset_name)
-#     map_meta['index_ranges'] = tilesets_index_ranges
-#
-#     # groups
-#     map_group_nodes = map_tree_root.findall('group')
-#     # print(map_group_nodes)
-#
-#     map_data = [0] * len(map_group_nodes)
-#
-#     for map_group_node in map_group_nodes:
-#         elevation_index = int(map_group_node.attrib['name'].split('_')[1])
-#         # print('Elevation:', elevation_index)
-#         layers = map_group_node.findall('layer')
-#         layers_stack = [None] * len(layers)
-#
-#         for layer in layers:
-#             # print(layer)
-#             layer_index = int(layer.attrib['name'].split('_')[0])
-#             layer_csv_raw = layer.findall('data')[0]
-#             layer_csv = list(csv.reader(layer_csv_raw.text.strip().split('\n')))
-#             # layer_csv = [int(item) for row in layer_csv for item in row if item]
-#             layer_csv = [[int(item) for item in row if item] for row in layer_csv]
-#             layers_stack[layer_index] = layer_csv
-#         # print(*layers_stack)
-#         map_data[elevation_index] = layers_stack
-#     return {
-#         'meta': map_meta,
-#         'data': map_data
-#     }
-#
-#
-# def __init__(self, tiles_data):
-#     print('Loading maps data')
-#     self.maps = dict()
-#     for filename, path in get_resource_abs_path(MAPS_PATH):
-#         self.maps[remove_extension(filename)] = self.load_map(filename, path, tiles_data)
-#     # print(*maps.items(), sep='\n')
-#     print(self.maps['testmap']['meta'])

@@ -30,3 +30,5 @@ class ResourceFiles:
 
     def get_tsx_files(self):
         return self.get_files('tsx')
+    def get_tmx_files(self):
+        return self.get_files('tmx')

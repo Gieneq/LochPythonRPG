@@ -18,7 +18,7 @@ class Camera(Vector2):
         self.inertial = inertial
         self.target_pos = Vector2(self)
         self.velocity = Vector2(0, 0)
-        self.focused_rect = None
+        self.focused_rect = Rect((0,0), (1,1))
         self.speed = 4.5
         self.fov_rect = Rect(focus_point, (RENDERING_WIDTH, RENDERING_HEIGHT))
 
@@ -80,7 +80,7 @@ class World:
 
         WorldLoader.load_test_map(self)
         self.camera = Camera()
-        self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)
+        # self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)#todo
 
     def input(self):
         self.stack.input()

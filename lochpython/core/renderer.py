@@ -19,10 +19,10 @@ class RenderingGroup(list):
         translation = sub_tuples_2D(self.camera, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
         for sprite_prop in self:
             sprite_pos = sub_tuples_2D(sprite_prop.rect.topleft, translation)
-            image_meta = sprite_prop.image_meta
+            image_data = sprite_prop.image_data
             sprite_clip_rect = sprite_prop.clip_rect
             # scaled_image = pygame.transform.scale(sprite_image, (w,h))
-            surface.blit(image_meta.image, sprite_pos, sprite_clip_rect)
+            surface.blit(image_data.surface, sprite_pos, sprite_clip_rect)
 
 
 class MainRenderer:

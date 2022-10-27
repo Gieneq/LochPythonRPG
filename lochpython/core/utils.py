@@ -5,8 +5,15 @@ NEARLY_ZERO = 1e-6
 
 
 class StackXY:
-    def __init__(self, width, height, initial=0):
-        self.stack = [[initial] * width] * height
+    def __init__(self, width, height, initial=None):
+        self.width, self.height = width, height
+
+        self.stack = []
+        for index_y in range(height):
+            row = []
+            for index_x in range(width):
+                row.append([])
+            self.stack.append(row)
 
     def get_stack(self, x, y):
         return self.stack[y][x]
@@ -33,7 +40,13 @@ class StackXY:
         return None
 
     def __str__(self):
-        return ',\n'.join([str(row) for row in self.stack])
+        return f"StackXY ({self.width} x {self.height})."
+
+    def print_stack_counts(self, indentation):
+        lines = ''
+        for stack_row in self.stack:
+            lines += indentation + ', '.join([str(len(field)) for field in stack_row]) + ',\n'
+        return lines
 
 
 class NanoTimer:

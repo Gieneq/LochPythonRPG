@@ -21,7 +21,7 @@ FOV_OFFSET = 4 * TILESIZE
 
 """Graphics resources"""
 IGNORE_WORKSPACE_DIR = 'workspace'
-RESOURCES_ROOT = '../../data'
+RESOURCES_ROOT = 'data'  # for debugging '../../data'
 GRAPHICS_TILESETS_PATHS = os.path.join(RESOURCES_ROOT, 'tilesets')
 GRAPHICS_ENTITIES_PATHS = os.path.join(RESOURCES_ROOT, 'entities')
 MAPS_PATH = os.path.join(RESOURCES_ROOT, 'maps')
