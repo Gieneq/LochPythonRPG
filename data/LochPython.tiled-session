@@ -3,10 +3,11 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "tilesets/floor.tsx",
+    "activeFile": "maps/testmap.tmx",
     "expandedProjectPaths": [
-        "maps",
         ".",
+        "maps",
+        "entities",
         "tilesets"
     ],
     "fileStates": {
@@ -21,45 +22,61 @@
                 3,
                 2
             ],
-            "scale": 2,
+            "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 271.25,
-                "y": 222.25
+                "x": 312.6666666666667,
+                "y": 248.33333333333331
             }
         },
         "tilesets/details.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 2
         },
         "tilesets/floor.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInEditor": 2
         },
         "tilesets/objects.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 2
         },
         "tilesets/objects_1x2.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 2
+        },
+        "tilesets/objects_2x2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
         }
     },
-    "frame.defaultDuration": 1000,
+    "frame.defaultDuration": 100,
+    "last.imagePath": "C:/Users/Lenovo/Documents/_Moje/Piotr/Pyrograf/LochPythonWS/LochPythonRPG/data/tilesets",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 20,
     "map.tileWidth": 20,
     "openFiles": [
         "maps/testmap.tmx",
-        "tilesets/floor.tsx"
+        "tilesets/objects.tsx",
+        "tilesets/details.tsx",
+        "tilesets/floor.tsx",
+        "tilesets/objects_1x2.tsx",
+        "tilesets/objects_2x2.tsx"
     ],
     "project": "LochPython.tiled-project",
+    "property.type": "int",
     "recentFiles": [
+        "tilesets/objects_2x2.tsx",
         "tilesets/objects_1x2.tsx",
-        "tilesets/details.tsx",
-        "entities/player.tsx",
         "tilesets/floor.tsx",
+        "tilesets/details.tsx",
         "tilesets/objects.tsx",
-        "maps/testmap.tmx"
-    ]
+        "maps/testmap.tmx",
+        "entities/player.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 40,
+        "width": 40
+    }
 }

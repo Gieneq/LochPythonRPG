@@ -25,6 +25,23 @@
    <object id="1" x="0" y="20" width="20" height="20"/>
   </objectgroup>
  </tile>
+ <tile id="6">
+  <properties>
+   <property name="light" type="int" value="5"/>
+   <property name="particles" value="flame"/>
+   <property name="source_x" type="int" value="10"/>
+   <property name="source_y" type="int" value="10"/>
+  </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="5" y="35" width="10" height="4"/>
+  </objectgroup>
+  <animation>
+   <frame tileid="6" duration="100"/>
+   <frame tileid="7" duration="100"/>
+   <frame tileid="8" duration="100"/>
+   <frame tileid="9" duration="100"/>
+  </animation>
+ </tile>
  <tile id="15">
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="20" width="20" height="20"/>
@@ -38,12 +55,12 @@
  </tile>
  <tile id="19">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="20" width="20" height="20"/>
+   <object id="1" x="0" y="20" width="20" height="16"/>
   </objectgroup>
  </tile>
  <tile id="20">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="20" width="20" height="20"/>
+   <object id="1" x="0" y="20" width="20" height="16"/>
   </objectgroup>
  </tile>
  <tile id="30">
