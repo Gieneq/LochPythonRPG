@@ -1,8 +1,9 @@
 from core.settings import *
+from core.timers import global_timers
 
 import sys
 from core.debug import Debugger
-from objects.property import AnimationPlayer
+from core.timers import AnimationController
 from world.world import World
 import core.renderer as renderer
 
@@ -51,7 +52,8 @@ class Game:
         self.world.input()
 
     def update(self, dt):
-        Debugger.print(f"AnimationTimers: {AnimationPlayer.total_players}")
+        global_timers.update(dt=dt)
+        Debugger.print(f"AnimationTimers: {AnimationController.total_count}")
         Debugger.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
         Debugger.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
         Debugger.print(f'Visible_objects count: {renderer.WorldRenderer.visible_objects_count}')

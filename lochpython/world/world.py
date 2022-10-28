@@ -6,7 +6,7 @@ from pygame.math import Vector2
 from core.debug import Debugger
 from core.utils import distance_squared, radius_squared_from_rect
 from objects.go import GameObject
-from objects.property import Props, AnimationPlayer
+from objects.property import Props
 from world.worldloader import WorldLoader, PlayerLoader
 from core.renderer import WorldRenderer
 from core.settings import COLLISION_RANGE, RENDERING_HEIGHT, RENDERING_WIDTH, FOV_OFFSET
@@ -47,9 +47,6 @@ class Camera(Vector2):
 
 
 class Layer(list):
-    # def __init__(self, *args):
-    #     super().__init__()
-
     def update(self, *args, **kwargs):
         for item in self:
             item.update(*args, **kwargs)
@@ -68,18 +65,13 @@ class World:
         self._basement = Layer()
         self._objects = Layer()
 
-        self.global_timers = []
-        self.nature_timer = AnimationPlayer(frames_count=4, duration=5)  # todo
-        self.global_timers.append(self.nature_timer)
-
         self.stack = Layer([self._basement, self._objects])
-
         self.colliding_objects = []
 
         WorldLoader.load_test_map(self)
         self.player = PlayerLoader(self).load((350, 200))
         self.add_game_object(self.player, GameObject.GOType.OBJECTS)
-        # self._objects.append(self.player) # hm?
+
         self.camera = Camera()
         self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)
 
@@ -89,8 +81,6 @@ class World:
     def update(self, dt):
         self.stack.update(dt=dt)
         self.camera.update_camera(dt=dt)
-        for global_timer in self.global_timers:
-            global_timer.update(dt=dt)
 
         # FOV
         # fov_rect = self.camera.get_field_of_view()

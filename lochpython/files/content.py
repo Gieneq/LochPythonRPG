@@ -78,7 +78,7 @@ class TileProperties:
     class KeyFrame:
         def __init__(self, tile_id, interval):
             self.tile_id = tile_id
-            self.interval = interval
+            self.interval = interval # not so much use in practice - [0] is common interval
 
     def __init__(self):
         self.collision_rects = []

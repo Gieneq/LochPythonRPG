@@ -3,7 +3,7 @@ from files.content import loader
 from core.settings import *
 from objects.go import GameObject
 from objects import property as p
-
+from core.timers import global_controllers
 
 class PlayerLoader:
     def __init__(self, world):
@@ -17,7 +17,7 @@ class PlayerLoader:
         player_coll = p.CollisionProperty(player_sprite.rect, self.world)
         player_moving = p.MovingProperty(player_coll, self.world)
         player_wsad = p.WSADDriven(player_moving)
-        # player_anim_prop = MovementAnimationProperty(player_sprite, player_moving)
+        # player_anim_prop = p.MovementAnimationProperty(player_sprite, player_moving)
         player = GameObject().with_sprite(player_sprite).with_moving(player_moving).with_wsad(
             player_wsad).with_collision(player_coll)
         return player
@@ -45,7 +45,7 @@ class TileFactory:
         position = (pos_x, pos_y)
 
         z_index = len(self.world.get_objects(dst, position))
-        print(f"zindex: {z_index}")
+        # print(f"zindex: {z_index}")
 
         sprite_property = p.SpriteProperty(tileset_data, self.world, position, visible=True, dst_layer=dst,
                                            z_index=z_index)
@@ -66,10 +66,13 @@ class TileFactory:
             # animations
             if tile_properties.has_animation():
                 anim_prop = p.AnimationProperty(sprite_property)
-                for keyframe in tile_properties.animation:
+                animation_frames = tile_properties.animation
+                frames_count = len(animation_frames)
+                frames_interval = animation_frames[0].interval
+                for keyframe in animation_frames:
                     anim_prop.keyframes.append(keyframe)
                 anim_prop.active = True
-                anim_prop.attach_own_player(self.world.nature_timer)
+                anim_prop.attach_to_controller(global_controllers.get_controller(frames_count, frames_interval))
 
             self.world.add_game_object(gameobject,
                                        dst)  # todo - nie na floor, w map loaderze i stack xy trzeba jakos rozgraniczyc obiekty

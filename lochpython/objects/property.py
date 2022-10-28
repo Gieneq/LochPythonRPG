@@ -10,7 +10,7 @@ from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCK
 from core.debug import Debugger
 from core.renderer import WorldRenderer
 from core.utils import generate_span_rect
-
+from core.timers import global_timers, AnimationController, Timer
 
 # from objects.go import GameObject
 
@@ -33,43 +33,6 @@ class RenderProperty:
         print('Render should be overwritten', args, kwargs)
 
 
-class AnimationPlayer:
-    players_register = []
-
-    def __init__(self, frames_count, duration=1, active=True, handlers=None):
-        self.frames_count = frames_count
-        self.interval = duration / self.frames_count
-        self.active = active
-        self._accumulated_time_s = 0
-        self.handlers = handlers if handlers else []
-        # todo add handlers checking if function
-        AnimationPlayer.players_register.append(self)
-
-    @property
-    def duration(self):
-        return self.interval * self.frames_count
-
-    @duration.setter
-    def duration(self, duration_s):
-        self.interval = duration_s / self.frames_count
-
-    def __del__(self):
-        if self in AnimationPlayer.players_register:
-            AnimationPlayer.players_register.remove(self)
-
-    def update(self, *args, dt, **kwargs):
-        if self.active and self.handlers:
-            self._accumulated_time_s += dt
-            if self._accumulated_time_s > self.interval:
-                self._accumulated_time_s -= self.interval
-                for handler in self.handlers:
-                    handler()
-
-    @classmethod
-    @property
-    def total_players(cls):
-        return len(cls.players_register)
-
 
 class AnimationProperty(UpdateProperty):
 
@@ -78,25 +41,24 @@ class AnimationProperty(UpdateProperty):
         self.keyframes = [] if not keyframes else keyframes
         self.looping = looping
         self.active = active
-        self.own_player = None  # todo default animation player?
+        self.parent_ctrl = None
         self._current_frame = 0
 
-    def attach_own_player(self, player):
-        self.own_player = player
-        player.handlers.append(self.next_frame)
+    def attach_to_controller(self, controller):
+        if self.set_frame not in controller.handlers:
+            controller.handlers.append(self.set_frame)
+            self.parent_ctrl = controller
 
-    # @property
-    # def starting_frame(self):
-    #     return self._starting_frame
-
-    # @starting_frame.setter
-    # def starting_frame(self, frame):
-    #     self._starting_frame = frame
-        # self.current_frame = frame #todo consider
+    def detach_from_controller(self):
+        self.parent_ctrl.handlers.remove(self.set_frame)
+        self.parent_ctrl = None
 
     @property
     def current_frame(self):
         return self._current_frame
+
+    def set_frame(self, frame_index):
+        self.current_frame = frame_index
 
     @current_frame.setter
     def current_frame(self, frame_index):
@@ -112,19 +74,12 @@ class AnimationProperty(UpdateProperty):
         if next_index >= self.frames_count:
             next_index = next_index % self.frames_count if self.looping else self.frames_count - 1
         self.current_frame = next_index
-        # next_index = self.current_frame + 1
-        # if next_index >= self.starting_frame + self.frames_count:
-        #     if self.looping:
-        #         next_index = ((next_index - self.starting_frame) % self.frames_count) + self.starting_frame
-        #     else:
-        #         next_index = self.starting_frame + self.frames_count - 1
-        #
-        # self.current_frame = next_index
 
     def update(self, *args, dt, **kwargs):
-        # todo and not...
-        if self.active and self.own_player:
-            self.own_player.update(*args, dt=dt, **kwargs)
+        pass
+        # # todo and not...
+        # if self.active and self.parent_timer:
+        #     self.parent_timer.update(*args, dt=dt, **kwargs)
 
 
 class MovementAnimationProperty(AnimationProperty):
@@ -137,12 +92,14 @@ class MovementAnimationProperty(AnimationProperty):
             return cls.MOVING if moving_prop.direction.magnitude() != 0 else cls.IDLE
 
     def __init__(self, sprite_prop, moving_prop):
-        super().__init__(sprite_prop, starting_frame=0, frames_count=4)
+        super().__init__(sprite_prop)
         self.moving_prop = moving_prop
         self.active = True
         self.looping = True
         self.looking_dir = [1, 1]
-        self.attach_own_player(AnimationPlayer(self.frames_count, duration=2))
+        self.animation_timer = Timer(2000/self.frames_count, active=True)
+        self.animation_ctrl = AnimationController(self.frames_count)
+        self.attach_to_controller(self.animation_ctrl)
         self.last_state = self.EntityState.IDLE
 
     def update(self, *args, dt, **kwargs):
@@ -152,8 +109,8 @@ class MovementAnimationProperty(AnimationProperty):
         entity_state = self.EntityState.get_state(self.moving_prop)
         start_idx_x = 0 if entity_state == self.EntityState.IDLE else 4
         self.frames_count = 4 if entity_state == self.EntityState.IDLE else 8
-        if self.own_player:
-            self.own_player.duration = 8 if entity_state == self.EntityState.IDLE else 2 * self.moving_prop.speed / 1000
+        if self.parent_ctrl:
+            self.parent_ctrl.duration = 8 if entity_state == self.EntityState.IDLE else 2 * self.moving_prop.speed / 1000
         # todo vary duration
 
         if direction.x < 0:
