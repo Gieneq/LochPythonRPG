@@ -203,7 +203,7 @@ class RegionMap:
         region_map.setup_elevations(len(elevations))
         for elevation_node in elevations:
             elevation_name = elevation_node.attrib['name']
-            elevation_idx = int(elevation_name.strip().split('_')[1])
+            elevation_idx = int(elevation_name.strip().split('_')[0])
             elevation = cls.Elevation(elevation_name, *region_map.map_size)
             region_map.add_elevation(elevation_idx, elevation)
 

@@ -109,8 +109,7 @@ class World:
         return dist - r1 - r2 < COLLISION_RANGE
 
     def get_nearby_obstacles(self, coll_prop):
-        potentially_colliding_objects = filter(lambda x: self.is_near(x.hitbox, coll_prop.hitbox),
-                                               self.colliding_objects)
+        potentially_colliding_objects = filter(lambda x: self.is_near(x.group_hitbox, coll_prop.group_hitbox), self.colliding_objects)
         potentially_colliding_objects = filter(lambda x: x is not coll_prop, potentially_colliding_objects)
         potentially_colliding_objects = set(potentially_colliding_objects)
 

@@ -98,4 +98,6 @@ Tiled was used to prepare map. There is need to create height layers and stack f
 
 ### TSX, TMX fileformat (28.10.2022)
 
-Supported TSX, TMS fileformats with additional properties.
+Changes:
+ - Supported TSX, TMS fileformats with additional properties.
+ - Added multiple hitboxes.

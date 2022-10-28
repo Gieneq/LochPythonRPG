@@ -1,6 +1,8 @@
 import math
 from time import time_ns
 
+from pygame.rect import Rect
+
 NEARLY_ZERO = 1e-6
 
 
@@ -144,3 +146,17 @@ def nested_print(data, indent=0, tab=' '):
         print(tab * indent + ']')
     else:
         print(tab * indent + str(data))
+
+
+def generate_span_rect(rects):
+    result = Rect(rects[0])
+    if len(rects) == 1:
+        return result
+    for rect in rects[1:]:
+        right = max(result.right, rect.right)
+        bottom = max(result.bottom, rect.bottom)
+        result.left = min(result.left, rect.left)
+        result.top = min(result.top, rect.top)
+        result.w = abs(right - result.left)
+        result.h = abs(bottom - result.top)
+    return result

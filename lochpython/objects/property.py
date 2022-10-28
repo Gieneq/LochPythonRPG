@@ -9,6 +9,9 @@ from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCK
 
 from core.debug import Debugger
 from core.renderer import WorldRenderer
+from core.utils import generate_span_rect
+
+
 # from objects.go import GameObject
 
 
@@ -275,12 +278,13 @@ class CollisionProperty(UpdateProperty, RenderProperty):
 
     def __init__(self, parent_rect, world, active=True):
         self.parent_rect = parent_rect
-        self.hitbox = None
-        self.fixed_hitbox = None
-        self._hitbox_method = self._generate_generic_hitbox
+        self.hitboxes = None
+        self.group_hitbox = None
+        self.fixed_hitboxes = []
+        self._hitbox_method = self._use_generic_hitbox
         self.world = world
         self.active = active
-        self.update_hitbox()
+        self.update_hitboxes()
 
     @property
     def active(self):
@@ -294,31 +298,34 @@ class CollisionProperty(UpdateProperty, RenderProperty):
         elif self in self.world.colliding_objects:
             self.world.colliding_objects.remove(self)
 
-    def _generate_generic_hitbox(self):
-        return Rect(self.parent_rect).inflate(0, CollisionProperty.INFLATION)
+    def _use_generic_hitbox(self):
+        return [Rect(self.parent_rect).inflate(0, CollisionProperty.INFLATION)]
 
-    def _use_fixed_hitbox(self):
-        global_fixed_hitbox = Rect(self.fixed_hitbox).move(self.parent_rect.x, self.parent_rect.y)
-        # global_fixed_hitbox.move(self.parent_rect.x, self.parent_rect.y)
-        return global_fixed_hitbox
+    def _use_fixed_hitboxes(self):
+        return [Rect(fixed_hitbox).move(self.parent_rect.x, self.parent_rect.y)for fixed_hitbox in self.fixed_hitboxes]
 
-    def use_fixed_hitbox(self, hitbox_rect):
-        self.fixed_hitbox = Rect(hitbox_rect)
-        self._hitbox_method = self._use_fixed_hitbox
-        self.update_hitbox()
+    def add_hitbox(self, hitbox_rect):
+        self.fixed_hitboxes.append(Rect(hitbox_rect))
+        self._hitbox_method = self._use_fixed_hitboxes
+        self.update_hitboxes()
+    def add_hitboxes(self, hitbox_rects):
+        for hb in hitbox_rects:
+            self.add_hitbox(hb)
 
-    def update_hitbox(self):
+    def update_hitboxes(self):
         if self.active:
-            self.hitbox = self._hitbox_method()
-            # print(self.hitbox)
+            self.hitboxes = self._hitbox_method()
+            self.group_hitbox = generate_span_rect(self.hitboxes)
 
     def update(self, *args, **kwargs):
         if self.active:
-            self.update_hitbox()
+            self.update_hitboxes()
 
     def render(self, *args, **kwargs):
         if self.active and DEBUG_COLLISION_BLOCKS:
-            Debugger.rect(self.hitbox, 'Blue')
+            for hitbox in self.hitboxes:
+                Debugger.rect(hitbox, 'Blue')
+            # Debugger.rect(self.group_hitbox, 'Green')
 
 
 class MovingProperty(UpdateProperty):
@@ -331,35 +338,39 @@ class MovingProperty(UpdateProperty):
         self.obstacles_hit = []
 
     def eval_collision(self, translation, obstacles):
-        from_point = Vector2(self.collision_prop.hitbox.topleft)
-        # todo capture translation and move source rect of hitbox
+        #todo oneday if neede - use list of hitboxes
+        from_point = Vector2(self.collision_prop.group_hitbox.topleft)
         o_encountered_x = self.eval_collision_x(translation, obstacles)
         o_encountered_y = self.eval_collision_y(translation, obstacles)
-        to_point = Vector2(self.collision_prop.hitbox.topleft)
+        to_point = Vector2(self.collision_prop.group_hitbox.topleft)
         return list(set(o_encountered_x + o_encountered_y)), to_point - from_point
 
     def eval_collision_x(self, translation, obstacles):
         obstacles_encountered = []
-        self.collision_prop.hitbox.x += translation[0]
+        self.collision_prop.group_hitbox.x += translation[0]
         for obstacle in obstacles:
-            if obstacle.hitbox.colliderect(self.collision_prop.hitbox):
-                obstacles_encountered.append(obstacle)
-                if translation[0] > 0:
-                    self.collision_prop.hitbox.right = obstacle.hitbox.left
-                if translation[0] < 0:
-                    self.collision_prop.hitbox.left = obstacle.hitbox.right
+            for hitbox in obstacle.hitboxes:
+                if hitbox.colliderect(self.collision_prop.group_hitbox):
+                    if obstacle not in obstacles_encountered:
+                        obstacles_encountered.append(obstacle)
+                    if translation[0] > 0:
+                        self.collision_prop.group_hitbox.right = hitbox.left
+                    if translation[0] < 0:
+                        self.collision_prop.group_hitbox.left = hitbox.right
         return obstacles_encountered
 
     def eval_collision_y(self, translation, obstacles):
         obstacles_encountered = []
-        self.collision_prop.hitbox.y += translation[1]
+        self.collision_prop.group_hitbox.y += translation[1]
         for obstacle in obstacles:
-            if obstacle.hitbox.colliderect(self.collision_prop.hitbox):
-                obstacles_encountered.append(obstacle)
-                if translation[1] > 0:
-                    self.collision_prop.hitbox.bottom = obstacle.hitbox.top
-                if translation[1] < 0:
-                    self.collision_prop.hitbox.top = obstacle.hitbox.bottom
+            for hitbox in obstacle.hitboxes:
+                if hitbox.colliderect(self.collision_prop.group_hitbox):
+                    if obstacle not in obstacles_encountered:
+                        obstacles_encountered.append(obstacle)
+                    if translation[1] > 0:
+                        self.collision_prop.group_hitbox.bottom = hitbox.top
+                    if translation[1] < 0:
+                        self.collision_prop.group_hitbox.top = hitbox.bottom
         return obstacles_encountered
 
     def update(self, *args, dt, **kwargs):
@@ -371,9 +382,10 @@ class MovingProperty(UpdateProperty):
             Debugger.print('Potential obstacles count', len(obstacles))
             if DEBUG_COLLISION_BLOCKS:
                 for obstacle in obstacles:
-                    Debugger.rect(obstacle.hitbox, 'Yellow', 2)
+                    Debugger.rect(obstacle.group_hitbox, 'Yellow', 2)
 
             translation = direction * self.speed * dt
+
             self.obstacles_hit, translation = self.eval_collision(translation, obstacles)
 
             self.collision_prop.parent_rect.x += translation[0]
@@ -381,7 +393,7 @@ class MovingProperty(UpdateProperty):
 
             if DEBUG_COLLISION_BLOCKS:
                 for obstacle in self.obstacles_hit:
-                    Debugger.rect(obstacle.hitbox, 'Yellow', 3)
+                    Debugger.rect(obstacle.group_hitbox, 'Yellow', 3)
 
             if translation.magnitude() != 0:
                 self.world.on_player_move()

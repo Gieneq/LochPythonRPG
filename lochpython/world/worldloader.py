@@ -63,12 +63,12 @@ class TileFactory:
 
             # colllision
             if tile_properties.has_collision_rects():
-                for collision_rect in tile_properties.collision_rects:
-                    pass  # todo multiple collision rects
-                collision_rect = tile_properties.collision_rects[0]
-                # print(collision_rect)
+                # for collision_rect in tile_properties.collision_rects:
+                #     pass  # todo multiple collision rects
+                # collision_rect = tile_properties.collision_rects[0]
+                # # print(collision_rect)
                 collision_prop = p.CollisionProperty(parent_rect=sprite_property.rect, world=self.world)
-                collision_prop.use_fixed_hitbox(collision_rect)
+                collision_prop.add_hitboxes(tile_properties.collision_rects)
                 gameobject.with_collision(collision_prop)
 
             #animations
