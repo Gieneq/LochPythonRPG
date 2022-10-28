@@ -5,6 +5,7 @@ from objects.go import GameObject
 from objects import property as p
 from core.timers import global_controllers
 
+
 class PlayerLoader:
     def __init__(self, world):
         # todo asset
@@ -12,7 +13,7 @@ class PlayerLoader:
 
     def load(self, position):
         mock_tileset_data = loader.mock.tileset_data()
-        player_sprite = p.SpriteProperty(mock_tileset_data, self.world, position, visible=True, dst_layer=1)
+        player_sprite = p.SpriteProperty(mock_tileset_data, self.world, position, visible=False, dst_layer=1) #todo nie dziala visible
 
         player_coll = p.CollisionProperty(player_sprite.rect, self.world)
         player_moving = p.MovingProperty(player_coll, self.world)
@@ -73,9 +74,17 @@ class TileFactory:
                     anim_prop.keyframes.append(keyframe)
                 anim_prop.active = True
                 anim_prop.attach_to_controller(global_controllers.get_controller(frames_count, frames_interval))
+                gameobject.with_animation(anim_prop) #todo
 
-            self.world.add_game_object(gameobject,
-                                       dst)  # todo - nie na floor, w map loaderze i stack xy trzeba jakos rozgraniczyc obiekty
+            if tile_properties.has_light_effect():
+                le = tile_properties.light_effect
+                # def __init__(self, parent_rect, relative_position, strength, active=True):
+                # ls = LightSource(le.position, le.strength)
+                light_prop = p.LightSourceProperty(sprite_property.rect, le.relative_position, le.strength)
+                light_prop.active = True
+                gameobject.with_light_source(light_prop)
+
+            self.world.add_game_object(gameobject, dst)
         return gameobject
 
     def build_elevation(self, elevation):

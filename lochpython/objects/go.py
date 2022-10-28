@@ -54,6 +54,10 @@ class GameObject:
         self.add_property(Props.ANIMATION, prop)
         return self
 
+    def with_light_source(self, prop):
+        self.add_property(Props.LIGHT_SOURCE, prop)
+        return self
+
     # general loop methods
 
     def input(self, *args, **kwargs):

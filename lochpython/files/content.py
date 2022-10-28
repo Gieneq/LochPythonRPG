@@ -75,6 +75,10 @@ class TilesetData:
 
 
 class TileProperties:
+    class LightEffect:
+        def __init__(self, strength=0, relative_position = (0,0)):
+            self.strength = strength
+            self.relative_position = relative_position
     class KeyFrame:
         def __init__(self, tile_id, interval):
             self.tile_id = tile_id
@@ -83,9 +87,12 @@ class TileProperties:
     def __init__(self):
         self.collision_rects = []
         self.animation = []
+        self.light_effect = None
 
     def has_animation(self):
         return self.animation
+    def has_light_effect(self):
+        return self.light_effect
 
     def has_collision_rects(self):
         return self.collision_rects
@@ -127,6 +134,21 @@ class TileProperties:
                     kf_tile_id = int(keyframe_data.attrib['tileid'])
                     kf_interval = int(keyframe_data.attrib['duration'])
                     tile_data.add_keyframe(TileProperties.KeyFrame(kf_tile_id, kf_interval))
+
+            if other_properties := tile_node.find('properties'):
+                other_properties = other_properties.findall('property')
+                def get_property_by_attr_name(properties, attr_name, default=None):
+                    for property in properties:
+                        if (prop_value := property.attrib.get('name')) == attr_name:
+                            return property.attrib.get('value', default)
+                    return default
+
+                if light_strength := get_property_by_attr_name(other_properties, 'light'):
+                    light_strength = int(light_strength)
+                    source_x = int(get_property_by_attr_name(other_properties, 'source_x', 0))
+                    source_y = int(get_property_by_attr_name(other_properties, 'source_y', 0))
+                    tile_data.light_effect =  cls.LightEffect(light_strength, (source_x, source_y))
+
 
             tiles_data[tile_id] = tile_data
         return tiles_data
@@ -179,7 +201,7 @@ class RegionMap:
         return lines
 
     @classmethod
-    def from_tsx_file(cls, abs_tmx_filepath, tilesets):
+    def from_tmx_file(cls, abs_tmx_filepath, tilesets):
         print(abs_tmx_filepath)
         map_node = et.parse(abs_tmx_filepath).getroot()
         map_attribs = map_node.attrib
@@ -231,6 +253,7 @@ class Mock:
         image_size = grid_size[0] * tile_size[0], grid_size[1] * tile_size[1]
         tileset_data = TilesetData(f'mock_{Mock.index}', None, grid_size, tile_size, image_size, with_alpha=False)
         tileset_data.set_color(color)
+        tileset_data.surface.set_colorkey((255,0,255))
         Mock.index += 1
         return tileset_data
 
@@ -251,7 +274,7 @@ class Loader:
         maps_resource_tms_files = ResourceFiles(ResourceFiles.MAPS).get_tmx_files()
         print(maps_resource_tms_files[0].abs_path)
         self.maps = dict(
-            [(remove_extension(file.name), RegionMap.from_tsx_file(file.abs_path, self.tilesets)) for file in
+            [(remove_extension(file.name), RegionMap.from_tmx_file(file.abs_path, self.tilesets)) for file in
              maps_resource_tms_files])
 
         self.mock = Mock

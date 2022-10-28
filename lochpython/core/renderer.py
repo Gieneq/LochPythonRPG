@@ -1,10 +1,14 @@
+import math
+import time
 from functools import reduce
+
+import pygame.color
 
 from lochpython.core.debug import Debugger
 from lochpython.core.settings import *
 from pygame.math import Vector2
 
-from core.utils import sub_tuples_2D
+from core.utils import sub_tuples_2D, add_tuples_2D
 
 
 class RenderingGroup(list):
@@ -41,25 +45,15 @@ class MainRenderer:
         cls.world_surface = pygame.Surface((cls.rendering_width, cls.rendering_height),
                                            depth=cls.display_surface.get_bitsize())
         cls.rendering_rect = pygame.Rect((0, 0), (cls.rendering_width, cls.rendering_height))
-        # cls.gui_surface.
-        # cls.rendering_surface.f
-
-        # cls.display_surface = pygame.display.get_surface()
-        # cls.rendering_surface = pygame.transform.chop(cls.display_surface, Rect((0,0), (HALF_WIDTH//2, HALF_HEIGHT//2)))
-        # cls.world_surface = cls.display_surface.copy()
-        print(cls.display_surface)
-        print(cls.world_surface)
-        # print(cls.display_surface == screen)
 
     @classmethod
     def render(cls):
         cls.display_surface.fill('black')
         cls.world_surface.fill('black')
         WorldRenderer.render()
+        SkyRenderer.render()
         DebugRenderer.render_in_world()
 
-        # pygame.transform.scale2x(surface=cls.world_surface, dest_surface=cls.display_surface)
-        # cls.display_surface.blit(cls.display_surface, cls.rendering_rect)
         pygame.transform.scale(surface=cls.world_surface, size=(DISPLAY_WIDTH, DISPLAY_HEIGHT),
                                dest_surface=cls.display_surface)
         cls.display_surface.blit(cls.display_surface, cls.rendering_rect)
@@ -110,6 +104,58 @@ class WorldRenderer:
     @property
     def visible_objects_count(cls):
         return reduce(lambda a, b: a + len(b), cls.stack, 0)
+
+class SkyRenderer:
+    camera = None
+    sky_surface = None
+    point_light_image = None
+    light_sources = []
+    darknes = 0
+    @classmethod
+    def attach_camera(cls, camera):
+        cls.camera = camera
+
+    @classmethod
+    def init(cls):
+        width, height = MainRenderer.rendering_width, MainRenderer.rendering_height
+        cls.sky_surface = pygame.Surface((width, height), depth=MainRenderer.world_surface.get_bitsize())
+        #aww
+        cls.point_light_image = pygame.image.load('data/lighting/point_light.png')
+        if not cls.light_sources:
+            cls.light_sources = []
+        # cls.light_sources.append()
+        # print(cls.sky_surface)
+
+
+    @classmethod
+    def render(cls):
+        cls.darknes = (math.sin(time.time())+1)/2
+        # print(cls.darknes)
+        channel_value = int(255 * cls.darknes)
+        channel_value = min(215,max(30,channel_value))
+        cls.sky_surface.fill((channel_value,channel_value,channel_value))
+
+        translation = sub_tuples_2D(cls.camera, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
+        translation = add_tuples_2D(translation, (cls.point_light_image.get_width()//2, cls.point_light_image.get_height()//2))
+        for ls_prop in cls.light_sources:
+            light_pos = sub_tuples_2D(ls_prop.position, translation)
+
+            # image_data = sprite_prop.image_data
+            # sprite_clip_rect = sprite_prop.clip_rect
+            # scaled_image = pygame.transform.scale(sprite_image, (w,h))
+
+            cls.sky_surface.blit(cls.point_light_image, light_pos)
+        MainRenderer.world_surface.blit(cls.sky_surface, (0,0), special_flags=pygame.BLEND_RGBA_SUB)
+
+    @classmethod
+    def add_point_light(cls, light):
+        if light not in cls.light_sources:
+            cls.light_sources.append(light)
+
+    @classmethod
+    def remove_point_light(cls, light):
+        if light in cls.light_sources:
+            cls.light_sources.remove(light)
 
 
 class DebugRenderer:

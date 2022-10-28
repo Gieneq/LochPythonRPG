@@ -6,14 +6,14 @@ Lets say to be RPG game. Project ispired by [Zelda in Python](https://www.youtub
 
 Project in development. Recent state:
 
-![Recent state](img/multi_hitbox.png)
+![Recent state](img/daynight.png)
 
 ## Todo
 
  - [x] TSX, TMX file support
  - [ ] Field of view with clipping
  - [ ] TSM extra properties (place ontop, stack shift, can be moved, etc.)
- - [ ] Better animation signal distribution, TSX interval/duration usage
+ - [x] Better animation signal distribution, TSX interval/duration usage
  - [ ] Lighting, light sources
  - [ ] TMX groups usege as elevations
  - [ ] Staircase implementation
@@ -109,3 +109,11 @@ Changes:
  - Added global timers and global controllers for animations.
 
 Timers are executing lists of handler functions. Controllers are driven by timers and are used to keep track of frames so that all tiles with the same animation are in sync.
+
+### Lighting and daynight cycle (28.10.2022)
+
+Changes:
+ - Added lightsources with TSX fileformat support.
+ - Added daynight cycle.
+
+![Daynight with light sources](img/daynight.png)

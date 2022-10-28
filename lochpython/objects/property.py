@@ -1,3 +1,4 @@
+from random import randint
 from enum import Enum, auto
 
 import pygame
@@ -5,12 +6,15 @@ from pygame import Rect
 from pygame.math import Vector2
 from pygame.sprite import Sprite
 from abc import ABC, abstractmethod
+
+import core.timers
 from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS
 
 from core.debug import Debugger
-from core.renderer import WorldRenderer
+from core.renderer import WorldRenderer, SkyRenderer
 from core.utils import generate_span_rect
 from core.timers import global_timers, AnimationController, Timer
+
 
 # from objects.go import GameObject
 
@@ -32,6 +36,38 @@ class RenderProperty:
     def render(self, *args, **kwargs):
         print('Render should be overwritten', args, kwargs)
 
+
+class LightSourceProperty(UpdateProperty):
+    def __init__(self, parent_rect, relative_position, strength, active=True):
+        self.parent_rect = parent_rect
+        self.relative_position = relative_position
+        self.position = parent_rect.x, parent_rect.y
+        self.strength = strength
+        self.active = active
+        self.deviation_timer = core.timers.global_timers.get_timer(100)
+        self.deviation_timer.attach(self.rand_deviation)
+        self.deviation = (0, 0)
+
+    @property
+    def active(self):
+        return self._active
+
+    @active.setter
+    def active(self, ac):
+        self._active = ac
+        if self._active:
+            SkyRenderer.add_point_light(self)
+        else:
+            SkyRenderer.remove_point_light(self)
+
+    def rand_deviation(self):
+        self.deviation = randint(-1, 1), randint(-1,1)
+
+    def update(self, *args, **kwargs):
+        if self._active:
+            self.position = self.parent_rect[0] + self.relative_position[0] + self.deviation[0], self.parent_rect[1] + \
+                            self.relative_position[1] + self.deviation[1]
+            # print(self.position)
 
 
 class AnimationProperty(UpdateProperty):
@@ -97,7 +133,7 @@ class MovementAnimationProperty(AnimationProperty):
         self.active = True
         self.looping = True
         self.looking_dir = [1, 1]
-        self.animation_timer = Timer(2000/self.frames_count, active=True)
+        self.animation_timer = Timer(2000 / self.frames_count, active=True)
         self.animation_ctrl = AnimationController(self.frames_count)
         self.attach_to_controller(self.animation_ctrl)
         self.last_state = self.EntityState.IDLE
@@ -161,7 +197,7 @@ class SpriteProperty(RenderProperty, UpdateProperty):
         self.z_index = z_index
         if dst_layer is None:
             # GameObject.GOType.OBJECTS
-            #todo
+            # todo
             self.dst_layer = 0
         else:
             self.dst_layer = dst_layer
@@ -257,12 +293,13 @@ class CollisionProperty(UpdateProperty, RenderProperty):
         return [Rect(self.parent_rect).inflate(0, CollisionProperty.INFLATION)]
 
     def _use_fixed_hitboxes(self):
-        return [Rect(fixed_hitbox).move(self.parent_rect.x, self.parent_rect.y)for fixed_hitbox in self.fixed_hitboxes]
+        return [Rect(fixed_hitbox).move(self.parent_rect.x, self.parent_rect.y) for fixed_hitbox in self.fixed_hitboxes]
 
     def add_hitbox(self, hitbox_rect):
         self.fixed_hitboxes.append(Rect(hitbox_rect))
         self._hitbox_method = self._use_fixed_hitboxes
         self.update_hitboxes()
+
     def add_hitboxes(self, hitbox_rects):
         for hb in hitbox_rects:
             self.add_hitbox(hb)
@@ -293,7 +330,7 @@ class MovingProperty(UpdateProperty):
         self.obstacles_hit = []
 
     def eval_collision(self, translation, obstacles):
-        #todo oneday if neede - use list of hitboxes
+        # todo oneday if neede - use list of hitboxes
         from_point = Vector2(self.collision_prop.group_hitbox.topleft)
         o_encountered_x = self.eval_collision_x(translation, obstacles)
         o_encountered_y = self.eval_collision_y(translation, obstacles)
@@ -404,3 +441,4 @@ class Props(Enum):
     MOVING = MovingProperty
     ANIMATION = AnimationProperty
     MOVEMENT_ANIMATION = MovementAnimationProperty
+    LIGHT_SOURCE = LightSourceProperty

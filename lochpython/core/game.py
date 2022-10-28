@@ -34,8 +34,10 @@ class Game:
 
         # setup renderers
         renderer.MainRenderer.init()
+        renderer.SkyRenderer.init()
         renderer.WorldRenderer.init()
         renderer.WorldRenderer.attach(self.world)
+        renderer.SkyRenderer.attach_camera(self.world.camera)
         renderer.DebugRenderer.init()
         renderer.DebugRenderer.attach(Debugger)
         renderer.DebugRenderer.attach_camera(self.world.camera)
@@ -59,6 +61,7 @@ class Game:
         Debugger.print(f'Visible_objects count: {renderer.WorldRenderer.visible_objects_count}')
         Debugger.print(f'Basement count: {self.world.basement_tiles_count}')
         Debugger.print(f'Objects count: {self.world.objects_count}')
+        Debugger.print(f'Light sources: {len(renderer.SkyRenderer.light_sources)}')
         Debugger.print(f'Obstacle_objects count: {self.world.limit_blocks_count}')
         self.world.update(dt)
 
