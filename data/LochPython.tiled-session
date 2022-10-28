@@ -55,11 +55,11 @@
     ],
     "project": "LochPython.tiled-project",
     "recentFiles": [
+        "tilesets/objects_1x2.tsx",
         "tilesets/details.tsx",
         "entities/player.tsx",
         "tilesets/floor.tsx",
         "tilesets/objects.tsx",
-        "maps/testmap.tmx",
-        "tilesets/objects_1x2.tsx"
+        "maps/testmap.tmx"
     ]
 }

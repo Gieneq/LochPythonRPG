@@ -2,9 +2,6 @@
 <tileset version="1.9" tiledversion="1.9.2" name="floor" tilewidth="20" tileheight="20" tilecount="450" columns="15">
  <image source="floor.png" width="300" height="600"/>
  <tile id="0">
-  <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="0" width="20" height="20"/>
-  </objectgroup>
   <animation>
    <frame tileid="0" duration="1000"/>
    <frame tileid="1" duration="1000"/>
@@ -80,6 +77,9 @@
   </objectgroup>
  </tile>
  <tile id="45">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="4" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="45" duration="1000"/>
    <frame tileid="46" duration="1000"/>
@@ -93,6 +93,9 @@
   </objectgroup>
  </tile>
  <tile id="60">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="60" duration="1000"/>
    <frame tileid="61" duration="1000"/>
@@ -101,6 +104,9 @@
   </animation>
  </tile>
  <tile id="75">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="16" y="0" width="4" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="75" duration="1000"/>
    <frame tileid="76" duration="1000"/>
@@ -109,6 +115,10 @@
   </animation>
  </tile>
  <tile id="90">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="4" height="20"/>
+   <object id="2" x="0" y="0" width="20" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="90" duration="1000"/>
    <frame tileid="91" duration="1000"/>
@@ -117,6 +127,9 @@
   </animation>
  </tile>
  <tile id="105">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="16" y="16" width="4" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="105" duration="1000"/>
    <frame tileid="106" duration="1000"/>
@@ -125,6 +138,10 @@
   </animation>
  </tile>
  <tile id="120">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="16" y="0" width="4" height="20"/>
+   <object id="2" x="0" y="0" width="20" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="120" duration="1000"/>
    <frame tileid="121" duration="1000"/>
@@ -133,6 +150,9 @@
   </animation>
  </tile>
  <tile id="135">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="16" width="4" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="135" duration="1000"/>
    <frame tileid="136" duration="1000"/>
@@ -141,6 +161,10 @@
   </animation>
  </tile>
  <tile id="150">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="4" height="20"/>
+   <object id="2" x="0" y="16" width="20" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="150" duration="1000"/>
    <frame tileid="151" duration="1000"/>
@@ -149,6 +173,9 @@
   </animation>
  </tile>
  <tile id="165">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="16" y="0" width="4" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="165" duration="1000"/>
    <frame tileid="166" duration="1000"/>
@@ -157,6 +184,10 @@
   </animation>
  </tile>
  <tile id="180">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="16" y="0" width="4" height="20"/>
+   <object id="2" x="0" y="16" width="20" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="180" duration="1000"/>
    <frame tileid="181" duration="1000"/>
@@ -165,6 +196,9 @@
   </animation>
  </tile>
  <tile id="195">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="4" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="195" duration="1000"/>
    <frame tileid="196" duration="1000"/>
@@ -173,14 +207,10 @@
   </animation>
  </tile>
  <tile id="210">
-  <animation>
-   <frame tileid="195" duration="1000"/>
-   <frame tileid="196" duration="1000"/>
-   <frame tileid="197" duration="1000"/>
-   <frame tileid="198" duration="1000"/>
-  </animation>
- </tile>
- <tile id="225">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="4" height="4"/>
+   <object id="2" x="16" y="16" width="4" height="4"/>
+  </objectgroup>
   <animation>
    <frame tileid="210" duration="1000"/>
    <frame tileid="211" duration="1000"/>
@@ -188,7 +218,22 @@
    <frame tileid="213" duration="1000"/>
   </animation>
  </tile>
+ <tile id="225">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="16" y="0" width="4" height="4"/>
+   <object id="2" x="0" y="16" width="4" height="4"/>
+  </objectgroup>
+  <animation>
+   <frame tileid="225" duration="1000"/>
+   <frame tileid="226" duration="1000"/>
+   <frame tileid="227" duration="1000"/>
+   <frame tileid="228" duration="1000"/>
+  </animation>
+ </tile>
  <tile id="240">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="240" duration="1000"/>
    <frame tileid="243" duration="1000"/>
@@ -197,6 +242,9 @@
   </animation>
  </tile>
  <tile id="241">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="241" duration="1000"/>
    <frame tileid="244" duration="1000"/>
@@ -205,6 +253,9 @@
   </animation>
  </tile>
  <tile id="242">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="242" duration="1000"/>
    <frame tileid="245" duration="1000"/>
@@ -213,6 +264,9 @@
   </animation>
  </tile>
  <tile id="255">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="255" duration="1000"/>
    <frame tileid="258" duration="1000"/>
@@ -221,6 +275,9 @@
   </animation>
  </tile>
  <tile id="257">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="257" duration="1000"/>
    <frame tileid="260" duration="1000"/>
@@ -229,6 +286,9 @@
   </animation>
  </tile>
  <tile id="270">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="270" duration="1000"/>
    <frame tileid="273" duration="1000"/>
@@ -237,6 +297,9 @@
   </animation>
  </tile>
  <tile id="271">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="271" duration="1000"/>
    <frame tileid="274" duration="1000"/>
@@ -245,6 +308,9 @@
   </animation>
  </tile>
  <tile id="272">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="272" duration="1000"/>
    <frame tileid="275" duration="1000"/>
@@ -253,6 +319,9 @@
   </animation>
  </tile>
  <tile id="285">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="285" duration="1000"/>
    <frame tileid="286" duration="1000"/>
@@ -261,6 +330,9 @@
   </animation>
  </tile>
  <tile id="300">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="300" duration="1000"/>
    <frame tileid="301" duration="1000"/>
@@ -269,6 +341,9 @@
   </animation>
  </tile>
  <tile id="315">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="315" duration="1000"/>
    <frame tileid="316" duration="1000"/>
@@ -277,6 +352,9 @@
   </animation>
  </tile>
  <tile id="330">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="330" duration="1000"/>
    <frame tileid="331" duration="1000"/>
@@ -285,6 +363,9 @@
   </animation>
  </tile>
  <tile id="345">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="20" height="20"/>
+  </objectgroup>
   <animation>
    <frame tileid="345" duration="1000"/>
    <frame tileid="346" duration="1000"/>
