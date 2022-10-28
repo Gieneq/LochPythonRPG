@@ -6,7 +6,7 @@ Lets say to be RPG game. Project ispired by [Zelda in Python](https://www.youtub
 
 Project in development. Recent state:
 
-![Recent state](img/beach_grass.gif)
+![Recent state](img/multi_hitbox.png)
 
 ## Todo
 
@@ -101,3 +101,5 @@ Tiled was used to prepare map. There is need to create height layers and stack f
 Changes:
  - Supported TSX, TMS fileformats with additional properties.
  - Added multiple hitboxes.
+
+![Multiple hitboxes](img/multi_hitbox.png)

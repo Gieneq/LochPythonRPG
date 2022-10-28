@@ -12,7 +12,7 @@ class PlayerLoader:
 
     def load(self, position):
         mock_tileset_data = loader.mock.tileset_data()
-        player_sprite = p.SpriteProperty(mock_tileset_data, self.world, position, visible=True,dst_layer=1)
+        player_sprite = p.SpriteProperty(mock_tileset_data, self.world, position, visible=True, dst_layer=1)
 
         player_coll = p.CollisionProperty(player_sprite.rect, self.world)
         player_moving = p.MovingProperty(player_coll, self.world)
@@ -31,47 +31,39 @@ class TileFactory:
         self.world = world
 
     def new_tile(self, global_index, position):
-        # global_index = 91
         if global_index <= 0:
             raise ValueError(f'Tiles indices are > 0, not {global_index}')
         local_index, _, tileset_name, dst = loader.decode_local_index(self.map_name, global_index)
-        if global_index > 1:
-            print(global_index, ' -> ', local_index, tileset_name)
+        # if global_index > 1:
+        #     print(global_index, ' -> ', local_index, tileset_name)
         tileset_data = loader.tilesets[tileset_name].tileset_data
-        # print(global_index, local_index)
         gameobject = GameObject()
 
-        #shilft large objects
-        # tile_size_h = tileset_data.tile_size[0]
-        # if tile_size_h > TILESIZE:
-        position = (position[0] - (tileset_data.tile_size[0] - TILESIZE), position[1] - (tileset_data.tile_size[1] - TILESIZE))
-
+        # shilft large objects
+        pos_x = position[0]# - (tileset_data.tile_size[0] - TILESIZE)
+        pos_y = position[1] - (tileset_data.tile_size[1] - TILESIZE)
+        position = (pos_x, pos_y)
 
         z_index = len(self.world.get_objects(dst, position))
         print(f"zindex: {z_index}")
 
-        sprite_property = p.SpriteProperty(tileset_data, self.world, position, visible=True, dst_layer=dst, z_index=z_index)
+        sprite_property = p.SpriteProperty(tileset_data, self.world, position, visible=True, dst_layer=dst,
+                                           z_index=z_index)
         sprite_property.image_index = local_index
         gameobject.with_sprite(sprite_property)
 
         # using properties
         tileset_properties = loader.tilesets[tileset_name].tiles_properties
-        # print(tileset_properties.keys())
         if local_index in tileset_properties.keys():
             tile_properties = tileset_properties[local_index]
-            # print('Yes, ', tile_properties)
 
             # colllision
             if tile_properties.has_collision_rects():
-                # for collision_rect in tile_properties.collision_rects:
-                #     pass  # todo multiple collision rects
-                # collision_rect = tile_properties.collision_rects[0]
-                # # print(collision_rect)
                 collision_prop = p.CollisionProperty(parent_rect=sprite_property.rect, world=self.world)
                 collision_prop.add_hitboxes(tile_properties.collision_rects)
                 gameobject.with_collision(collision_prop)
 
-            #animations
+            # animations
             if tile_properties.has_animation():
                 anim_prop = p.AnimationProperty(sprite_property)
                 for keyframe in tile_properties.animation:
@@ -79,7 +71,8 @@ class TileFactory:
                 anim_prop.active = True
                 anim_prop.attach_own_player(self.world.nature_timer)
 
-            self.world.add_game_object(gameobject, dst)# todo - nie na floor, w map loaderze i stack xy trzeba jakos rozgraniczyc obiekty
+            self.world.add_game_object(gameobject,
+                                       dst)  # todo - nie na floor, w map loaderze i stack xy trzeba jakos rozgraniczyc obiekty
         return gameobject
 
     def build_elevation(self, elevation):

@@ -208,15 +208,13 @@ class SpriteProperty(RenderProperty, UpdateProperty):
             self.dst_layer = 0
         else:
             self.dst_layer = dst_layer
-        self._sprite = Sprite()  # no group at start = visible False
+        self._sprite = Sprite()
         self._sprite.image = self.image_data.surface
         self._sprite.rect = Rect(position, self.dimensions)
         self.visible = visible
         self.clip_rect = Rect((0, 0), self.dimensions)
-        # if self.dimensions[1] > TILESIZE:
-        #     self.clip_rect.y -= TILESIZE
         self._image_index = -1
-        self.image_index = 0  # too to set index and update clip_rect
+        self.image_index = 0
 
     def __del__(self):
         self.visible = False
