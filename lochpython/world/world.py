@@ -5,8 +5,9 @@ from pygame.math import Vector2
 
 from core.debug import Debugger
 from core.utils import distance_squared, radius_squared_from_rect
+from objects.go import GameObject
 from objects.property import Props, AnimationPlayer
-from world.worldloader import WorldLoader
+from world.worldloader import WorldLoader, PlayerLoader
 from core.renderer import WorldRenderer
 from core.settings import COLLISION_RANGE, RENDERING_HEIGHT, RENDERING_WIDTH, FOV_OFFSET
 
@@ -64,23 +65,23 @@ class Layer(list):
 
 class World:
     def __init__(self):
-        self.floor = Layer()
-        self.floor_details = Layer()
-        self.entities = Layer()
-        self.limit_blocks = Layer()
+        self._basement = Layer()
+        self._objects = Layer()
 
         self.global_timers = []
         self.nature_timer = AnimationPlayer(frames_count=4, duration=5)  # todo
         self.global_timers.append(self.nature_timer)
 
-        self.stack = Layer([self.floor, self.floor_details, self.entities, self.limit_blocks])
-        self.player = None
+        self.stack = Layer([self._basement, self._objects])
 
         self.colliding_objects = []
 
         WorldLoader.load_test_map(self)
+        self.player = PlayerLoader(self).load((350, 200))
+        self.add_game_object(self.player, GameObject.GOType.OBJECTS)
+        # self._objects.append(self.player) # hm?
         self.camera = Camera()
-        # self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)#todo
+        self.camera.focus_on_entity(self.player.properties[Props.SPRITE].rect)
 
     def input(self):
         self.stack.input()
@@ -119,3 +120,19 @@ class World:
     @property
     def limit_blocks_count(self):
         return len(self.colliding_objects)
+    @property
+    def basement_tiles_count(self):
+        return len(self._basement)
+    @property
+    def objects_count(self):
+        return len(self._objects)
+
+    def add_game_object(self, go, go_type):
+        if go_type == 0:
+            self._basement.append(go)
+        else:
+            self._objects.append(go)
+
+    def get_objects(self, go_type, position):
+        layer = self._basement if go_type == GameObject.GOType.BASEMENT else self._objects
+        return list(filter(lambda go: go.properties[Props.SPRITE].rect.topleft == position, layer))

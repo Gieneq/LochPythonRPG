@@ -1,8 +1,15 @@
+from enum import Enum
+
 from objects.property import Props
+
 
 
 class GameObject:
     # todo remove prop execute after render, need to remove queue
+
+    class GOType(Enum):
+        BASEMENT = 0
+        OBJECTS = 1
 
     def __init__(self):
         self.properties = {}

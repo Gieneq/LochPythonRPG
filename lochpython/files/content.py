@@ -1,4 +1,4 @@
-import csv
+from core.settings import TILESIZE
 import os
 import pygame
 from pygame.rect import Rect
@@ -6,6 +6,7 @@ import xml.etree.ElementTree as et
 
 from core.utils import StackXY
 from files.path import ResourceFiles, remove_extension
+from objects.go import GameObject
 
 
 class TilesetData:
@@ -13,12 +14,18 @@ class TilesetData:
         self.name = name
         self.path = path
         self.with_alpha = with_alpha
-        surface = pygame.image.load(path)
-        self.surface = surface.convert_alpha() if with_alpha else surface.convert()
+        if path:
+            surface = pygame.image.load(path)
+            self.surface = surface.convert_alpha() if with_alpha else surface.convert()
+        else:
+            self.surface = pygame.Surface(image_size)
         self.tile_size = tile_size
         self.grid_size = grid_size
         self.image_size = image_size
         self.tiles_count = self.grid_size[0] * self.grid_size[1]
+
+    def set_color(self, color):
+        self.surface.fill(color)
 
     @property
     def columns_count(self):
@@ -146,7 +153,7 @@ class RegionMap:
             self.stack = StackXY(width, height, initial=0)
 
         def __str__(self):
-            return f"Elevation {self.name}: {self.stack}. Stacked counts: \n{self.stack.print_stack_counts(indentation='  ' * 2)}"
+            return f"Elevation {self.name}: {self.stack}. Stacked counts: \n{self.stack.print_stack(indentation='  ' * 2)}"
 
     def __init__(self, path, map_size, tile_size):
         self.path = path
@@ -200,8 +207,9 @@ class RegionMap:
             elevation = cls.Elevation(elevation_name, *region_map.map_size)
             region_map.add_elevation(elevation_idx, elevation)
 
-            layers_nodes = [(int(layer.attrib['name'].split('_')[0]), layer) for layer in elevation_node.findall('layer')]
-            layers_nodes.sort(key=lambda x:x[0])
+            layers_nodes = [(int(layer.attrib['name'].split('_')[0]), layer) for layer in
+                            elevation_node.findall('layer')]
+            layers_nodes.sort(key=lambda x: x[0])
             for idx, layer in layers_nodes:
                 layer_csv_rows = layer.find('data').text.strip().split(',\n')
                 for index_y, csv_row in enumerate(layer_csv_rows):
@@ -209,8 +217,22 @@ class RegionMap:
                     for index_x, item in enumerate(items):
                         if item > 0:
                             elevation.stack.push_top(index_x, index_y, item)
+            # print(elevation)
 
         return region_map
+
+
+class Mock:
+    index = 0
+    @staticmethod
+    def tileset_data(color=(255, 0, 255)):
+        grid_size = (1, 1)
+        tile_size = (TILESIZE, TILESIZE)
+        image_size = grid_size[0] * tile_size[0], grid_size[1] * tile_size[1]
+        tileset_data = TilesetData(f'mock_{Mock.index}', None, grid_size, tile_size, image_size, with_alpha=False)
+        tileset_data.set_color(color)
+        Mock.index += 1
+        return tileset_data
 
 
 class Loader:
@@ -231,6 +253,8 @@ class Loader:
         self.maps = dict(
             [(remove_extension(file.name), RegionMap.from_tsx_file(file.abs_path, self.tilesets)) for file in
              maps_resource_tms_files])
+
+        self.mock = Mock
         # for region_map_name, region_map_data in self.maps.items():
         #     print(region_map_name, region_map_data)
 
@@ -244,8 +268,16 @@ class Loader:
         for tileset_name, indices_range in map_ragion.global_ids.items():
             if map_index in indices_range:
                 # be aware - counting from 1, 0 means missing
-                local_index = map_index - indices_range.start + 1
-                return local_index, indices_range, tileset_name
+                local_index = map_index - indices_range.start  # + 1
+                # if local_index < 0:
+                #
+
+                mock_destination = 0
+                # if tileset_name == 'floor' or tileset_name == 'details':
+                #     mock_destination = GameObject.GOType.BASEMENT
+                if tileset_name.startswith('objects'):
+                    mock_destination = 1
+                return local_index, indices_range, tileset_name, mock_destination
         return None
 
 

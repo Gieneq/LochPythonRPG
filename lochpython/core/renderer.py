@@ -70,10 +70,10 @@ class MainRenderer:
 
 class WorldRenderer:
     world = None
-    floor_objects = RenderingGroup()
-    details_objects = RenderingGroup()
-    entity_objects = RenderingGroup()
-    stack = [floor_objects, details_objects, entity_objects]
+    basement_sprites = RenderingGroup()
+    # details_objects = RenderingGroup()
+    objects_sprites = RenderingGroup()
+    stack = [basement_sprites, objects_sprites]
 
     @classmethod
     def init(cls):
@@ -85,28 +85,27 @@ class WorldRenderer:
 
     @classmethod
     def add_visible_object(cls, sprite_prop):
-        layer_id = sprite_prop.stack_layer.layer_id
-        cls.stack[layer_id].append(sprite_prop)
+        dst_layer = sprite_prop.dst_layer
+        # z_index = sprite_prop.z_index
+        cls.stack[dst_layer].append(sprite_prop)
 
     @classmethod
     def remove_visible_object(cls, sprite_prop):
-        layer_id = sprite_prop.stack_layer.layer_id
-        if sprite_prop in cls.stack[layer_id]:
-            cls.stack[layer_id].remove(sprite_prop)
+        dst_layer = sprite_prop.dst_layer
+        if sprite_prop in cls.stack[dst_layer]:
+            cls.stack[dst_layer].remove(sprite_prop)
+
+
+    @classmethod
+    def sort_order(cls):
+        Debugger.print('Renderer sorting')
+        cls.objects_sprites.sort(key=lambda sp_prop: (sp_prop.rect.bottom, sp_prop.z_index))
 
     @classmethod
     def render(cls):
         for layer in cls.stack:
             layer.attach_camera(cls.world.camera)
             layer.draw(MainRenderer.world_surface)
-
-    @classmethod
-    def sort_order(cls):
-        Debugger.print('Sorting')
-        sorted_objects = sorted(cls.entity_objects, key=lambda x: x.rect.centery)  # todo
-        cls.entity_objects.clear()
-        cls.entity_objects.extend(sorted_objects)
-
     @classmethod
     @property
     def visible_objects_count(cls):

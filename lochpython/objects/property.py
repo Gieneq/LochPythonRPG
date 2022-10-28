@@ -9,6 +9,7 @@ from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCK
 
 from core.debug import Debugger
 from core.renderer import WorldRenderer
+# from objects.go import GameObject
 
 
 class InputProperty(ABC):
@@ -75,7 +76,7 @@ class AnimationProperty(UpdateProperty):
         self.starting_frame = starting_frame
         self.looping = looping
         self.active = active
-        self.own_player = None #todo default animation player?
+        self.own_player = None  # todo default animation player?
 
     def attach_own_player(self, player):
         self.own_player = player
@@ -181,15 +182,26 @@ class SpriteProperty(RenderProperty, UpdateProperty):
         def layer_id(self):
             return self.value
 
-    def __init__(self, image_data, world, position, visible=False, stack_layer=Layer.FLOOR):
+    def __init__(self, image_data, world, position, visible=False, z_index=0, dst_layer=None):
+        """
+        Tile size from image_data
+        """
         self.image_data = image_data
         self.world = world
-        self.stack_layer = stack_layer
+        self.z_index = z_index
+        if dst_layer is None:
+            # GameObject.GOType.OBJECTS
+            #todo
+            self.dst_layer = 0
+        else:
+            self.dst_layer = dst_layer
         self._sprite = Sprite()  # no group at start = visible False
         self._sprite.image = self.image_data.surface
         self._sprite.rect = Rect(position, self.dimensions)
         self.visible = visible
         self.clip_rect = Rect((0, 0), self.dimensions)
+        # if self.dimensions[1] > TILESIZE:
+        #     self.clip_rect.y -= TILESIZE
         self._image_index = -1
         self.image_index = 0  # too to set index and update clip_rect
 
@@ -254,6 +266,8 @@ class CollisionProperty(UpdateProperty, RenderProperty):
     def __init__(self, parent_rect, world, active=True):
         self.parent_rect = parent_rect
         self.hitbox = None
+        self.fixed_hitbox = None
+        self._hitbox_method = self._generate_generic_hitbox
         self.world = world
         self.active = active
         self.update_hitbox()
@@ -270,9 +284,23 @@ class CollisionProperty(UpdateProperty, RenderProperty):
         elif self in self.world.colliding_objects:
             self.world.colliding_objects.remove(self)
 
+    def _generate_generic_hitbox(self):
+        return Rect(self.parent_rect).inflate(0, CollisionProperty.INFLATION)
+
+    def _use_fixed_hitbox(self):
+        global_fixed_hitbox = Rect(self.fixed_hitbox).move(self.parent_rect.x, self.parent_rect.y)
+        # global_fixed_hitbox.move(self.parent_rect.x, self.parent_rect.y)
+        return global_fixed_hitbox
+
+    def use_fixed_hitbox(self, hitbox_rect):
+        self.fixed_hitbox = Rect(hitbox_rect)
+        self._hitbox_method = self._use_fixed_hitbox
+        self.update_hitbox()
+
     def update_hitbox(self):
         if self.active:
-            self.hitbox = Rect(self.parent_rect).inflate(0, CollisionProperty.INFLATION)
+            self.hitbox = self._hitbox_method()
+            # print(self.hitbox)
 
     def update(self, *args, **kwargs):
         if self.active:

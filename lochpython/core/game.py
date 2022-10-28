@@ -55,6 +55,8 @@ class Game:
         Debugger.print("FPS = ", round(self.clock.get_fps(), 1), " Hz", sep="")
         Debugger.print("Dt = ", round(1e3 * dt, 3), " ms", sep="")
         Debugger.print(f'Visible_objects count: {renderer.WorldRenderer.visible_objects_count}')
+        Debugger.print(f'Basement count: {self.world.basement_tiles_count}')
+        Debugger.print(f'Objects count: {self.world.objects_count}')
         Debugger.print(f'Obstacle_objects count: {self.world.limit_blocks_count}')
         self.world.update(dt)
 

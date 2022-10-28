@@ -8,15 +8,15 @@ class StackXY:
     def __init__(self, width, height, initial=None):
         self.width, self.height = width, height
 
-        self.stack = []
+        self.items = []
         for index_y in range(height):
             row = []
             for index_x in range(width):
                 row.append([])
-            self.stack.append(row)
+            self.items.append(row)
 
     def get_stack(self, x, y):
-        return self.stack[y][x]
+        return self.items[y][x]
 
     def get_top_stack(self, x, y):
         stack = self.get_stack(x, y)
@@ -44,8 +44,13 @@ class StackXY:
 
     def print_stack_counts(self, indentation):
         lines = ''
-        for stack_row in self.stack:
+        for stack_row in self.items:
             lines += indentation + ', '.join([str(len(field)) for field in stack_row]) + ',\n'
+        return lines
+    def print_stack(self, indentation):
+        lines = ''
+        for stack_row in self.items:
+            lines += indentation + ', '.join([str(field) for field in stack_row]) + ',\n'
         return lines
 
 
