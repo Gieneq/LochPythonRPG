@@ -8,6 +8,16 @@ Project in development. Recent state:
 
 ![Recent state](img/beach_grass.gif)
 
+## Todo
+
+ - [x] TSX, TMX file support
+ - [ ] TSM extra properties (place ontop, stack shift, can be moved, etc.)
+ - [ ] Better animation signal distribution, TSX interval/duration usage
+ - [ ] Lighting, light sources
+ - [ ] TMX groups usege as elevations
+ - [ ] Staircase implementation
+ - [ ] Ingame objects placement and interactions
+
 ### Collison detection introduction
 
 Steps:
@@ -85,3 +95,7 @@ Tiled was used to prepare map. There is need to create height layers and stack f
 ![Tiled editor](img/tiled_editor.JPG)
 
 ![Animated nature and shore](img/beach_grass.gif)
+
+### TSX, TMX fileformat (28.10.2022)
+
+Supported TSX, TMS fileformats with additional properties.

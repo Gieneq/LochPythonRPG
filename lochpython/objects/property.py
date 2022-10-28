@@ -70,46 +70,56 @@ class AnimationPlayer:
 
 class AnimationProperty(UpdateProperty):
 
-    def __init__(self, sprite_prop, looping=True, active=False, starting_frame=0, frames_count=1):
+    def __init__(self, sprite_prop, looping=True, active=False, keyframes=None):
         self.sprite_prop = sprite_prop
-        self.frames_count = frames_count
-        self.starting_frame = starting_frame
+        self.keyframes = [] if not keyframes else keyframes
         self.looping = looping
         self.active = active
         self.own_player = None  # todo default animation player?
+        self._current_frame = 0
 
     def attach_own_player(self, player):
         self.own_player = player
         player.handlers.append(self.next_frame)
 
-    @property
-    def starting_frame(self):
-        return self._starting_frame
+    # @property
+    # def starting_frame(self):
+    #     return self._starting_frame
 
-    @starting_frame.setter
-    def starting_frame(self, frame):
-        self._starting_frame = frame
+    # @starting_frame.setter
+    # def starting_frame(self, frame):
+    #     self._starting_frame = frame
         # self.current_frame = frame #todo consider
 
     @property
     def current_frame(self):
-        return self.sprite_prop.image_index
+        return self._current_frame
 
     @current_frame.setter
-    def current_frame(self, frame):
-        self.sprite_prop.image_index = frame
+    def current_frame(self, frame_index):
+        self._current_frame = frame_index
+        self.sprite_prop.image_index = self.keyframes[frame_index].tile_id
+
+    @property
+    def frames_count(self):
+        return len(self.keyframes)
 
     def next_frame(self):
         next_index = self.current_frame + 1
-        if next_index >= self.starting_frame + self.frames_count:
-            if self.looping:
-                next_index = ((next_index - self.starting_frame) % self.frames_count) + self.starting_frame
-            else:
-                next_index = self.starting_frame + self.frames_count - 1
-
+        if next_index >= self.frames_count:
+            next_index = next_index % self.frames_count if self.looping else self.frames_count - 1
         self.current_frame = next_index
+        # next_index = self.current_frame + 1
+        # if next_index >= self.starting_frame + self.frames_count:
+        #     if self.looping:
+        #         next_index = ((next_index - self.starting_frame) % self.frames_count) + self.starting_frame
+        #     else:
+        #         next_index = self.starting_frame + self.frames_count - 1
+        #
+        # self.current_frame = next_index
 
     def update(self, *args, dt, **kwargs):
+        # todo and not...
         if self.active and self.own_player:
             self.own_player.update(*args, dt=dt, **kwargs)
 

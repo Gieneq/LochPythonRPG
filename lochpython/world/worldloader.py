@@ -73,11 +73,11 @@ class TileFactory:
 
             #animations
             if tile_properties.has_animation():
+                anim_prop = p.AnimationProperty(sprite_property)
                 for keyframe in tile_properties.animation:
-                    pass
-                    # print(keyframe)
-                # anim_prop = p.AnimationProperty(sprite_property, starting_frame=0, frames_count=4, active=True)
-                # anim_prop.attach_own_player(self.world.nature_timer)
+                    anim_prop.keyframes.append(keyframe)
+                anim_prop.active = True
+                anim_prop.attach_own_player(self.world.nature_timer)
 
             self.world.add_game_object(gameobject, dst)# todo - nie na floor, w map loaderze i stack xy trzeba jakos rozgraniczyc obiekty
         return gameobject
