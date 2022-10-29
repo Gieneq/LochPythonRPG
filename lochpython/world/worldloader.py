@@ -13,15 +13,32 @@ class PlayerLoader:
 
     def load(self, position):
         mock_tileset_data = loader.mock.tileset_data()
-        player_sprite = p.SpriteProperty(mock_tileset_data, self.world, position, visible=False,
-                                         dst_layer=1)  # todo nie dziala visible
+        # mock_tileset_data.surface.set_colorkey((255,0,255)) #todo lol
+        player_sprite = p.SpriteProperty(mock_tileset_data, self.world, position, visible=True, dst_layer=1)  # todo
 
         player_coll = p.CollisionProperty(player_sprite.rect, self.world)
         player_moving = p.MovingProperty(player_coll, self.world)
         player_wsad = p.WSADDriven(player_moving)
+
+        prts_tileset = loader.tilesets['particles']
+        print(prts_tileset)
+        prts_tileset_data = loader.tilesets['particles'].tileset_data
+        print(prts_tileset_data)
+        prts_tileset_props = loader.tilesets['particles'].tiles_properties
+        print(*prts_tileset_props.values())
+
+
+        # todo zbuduj zestaw
+
+
+
+        particle_data = loader.mock.tileset_data()
+        particle_sprite = p.SpriteProperty(prts_tileset_data, self.world, position, visible=True, dst_layer=1)
+
+        player_as_emiter = p.EmitterProperty(particle_sprite)
         # player_anim_prop = p.MovementAnimationProperty(player_sprite, player_moving)
         player = GameObject().with_sprite(player_sprite).with_moving(player_moving).with_wsad(
-            player_wsad).with_collision(player_coll)
+            player_wsad).with_collision(player_coll).with_emitter(player_as_emiter)
         return player
 
 
@@ -80,7 +97,7 @@ class TileFactory:
             # light
             if tile_properties.has_light_effect():
                 le = tile_properties.light_effect
-                light_prop = p.LightSourceProperty(sprite_property.rect, le.relative_position, le.strength, le.active)
+                light_prop = p.LightSourceProperty(sprite_property.rect, le.relative_position, le.strength, le.color, le.active)
                 gameobject.with_light_source(light_prop)
 
             self.world.add_game_object(gameobject, dst)

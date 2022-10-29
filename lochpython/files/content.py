@@ -76,24 +76,37 @@ class TilesetData:
 
 class TileProperties:
     class LightEffect:
-        def __init__(self, strength=0, relative_position = (0,0), active=False):
+        def __init__(self, strength=0, relative_position=(0, 0), light_color=(255, 255, 255), active=False):
             self.strength = strength
             self.relative_position = relative_position
+            self.color = light_color
             self.active = active
+
+    class Emitter:
+        def __init__(self, particles_type='flame', relative_position=(0, 0), active=False):
+            self.particles_type = particles_type
+            self.relative_position = relative_position
+            self.active = active
+
     class KeyFrame:
         def __init__(self, tile_id, interval):
             self.tile_id = tile_id
-            self.interval = interval # not so much use in practice - [0] is common interval
+            self.interval = interval  # not so much use in practice - [0] is common interval
 
     def __init__(self):
-        self.collision_rects = []
+        self.collision_rects = []  # todo replace with dict
         self.animation = []
-        self.light_effect = None
+        self.other = dict()
+
+    @property
+    def light_effect(self):
+        return self.other.get('light')
 
     def has_animation(self):
         return self.animation
+
     def has_light_effect(self):
-        return self.light_effect
+        return self.other.get('light')
 
     def has_collision_rects(self):
         return self.collision_rects
@@ -138,20 +151,30 @@ class TileProperties:
 
             if other_properties := tile_node.find('properties'):
                 other_properties = other_properties.findall('property')
+
                 def get_property_by_attr_name(properties, attr_name, default=None):
-                    for property in properties:
-                        if (prop_value := property.attrib.get('name')) == attr_name:
-                            return property.attrib.get('value', default)
+                    for a_prop in properties:
+                        if a_prop.attrib.get('name') == attr_name:
+                            return a_prop.attrib.get('value', default)
                     return default
 
+                # light
                 if light_strength := get_property_by_attr_name(other_properties, 'light'):
                     light_strength = int(light_strength)
-                    source_x = int(get_property_by_attr_name(other_properties, 'source_x', 0))
-                    source_y = int(get_property_by_attr_name(other_properties, 'source_y', 0))
-                    active = int(get_property_by_attr_name(other_properties, 'active', False))
-                    tile_data.light_effect =  cls.LightEffect(light_strength, (source_x, source_y), active)
+                    light_x = int(get_property_by_attr_name(other_properties, 'light_x', 0))
+                    light_y = int(get_property_by_attr_name(other_properties, 'light_y', 0))
+                    light_color = get_property_by_attr_name(other_properties, 'light_color', (255,255,255))
+                    if light_color == '':
+                        light_color = (255,255,255)
+                    active = bool(get_property_by_attr_name(other_properties, 'active', True))
+                    tile_data.other['light'] = cls.LightEffect(light_strength, (light_x, light_y), light_color, active)
 
-
+                # particles
+                if particles_type := get_property_by_attr_name(other_properties, 'particles'):
+                    particles_x = int(get_property_by_attr_name(other_properties, 'particles_x', 0))
+                    particles_y = int(get_property_by_attr_name(other_properties, 'particles_y', 0))
+                    active = bool(get_property_by_attr_name(other_properties, 'active', False))
+                    tile_data.other['emitter'] = cls.Emitter(particles_type, (particles_x, particles_y), active)
             tiles_data[tile_id] = tile_data
         return tiles_data
 
@@ -248,6 +271,7 @@ class RegionMap:
 
 class Mock:
     index = 0
+
     @staticmethod
     def tileset_data(color=(255, 0, 255)):
         grid_size = (1, 1)
@@ -255,7 +279,6 @@ class Mock:
         image_size = grid_size[0] * tile_size[0], grid_size[1] * tile_size[1]
         tileset_data = TilesetData(f'mock_{Mock.index}', None, grid_size, tile_size, image_size, with_alpha=False)
         tileset_data.set_color(color)
-        tileset_data.surface.set_colorkey((255,0,255))
         Mock.index += 1
         return tileset_data
 

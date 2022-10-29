@@ -3,7 +3,6 @@ from enum import Enum
 from objects.property import Props
 
 
-
 class GameObject:
     # todo remove prop execute after render, need to remove queue
 
@@ -56,6 +55,14 @@ class GameObject:
 
     def with_light_source(self, prop):
         self.add_property(Props.LIGHT_SOURCE, prop)
+        return self
+
+    def with_emitter(self, prop):
+        self.add_property(Props.EMITTER, prop)
+        return self
+
+    def with_particle(self, prop):
+        self.add_property(Props.PARTICLE, prop)
         return self
 
     # general loop methods

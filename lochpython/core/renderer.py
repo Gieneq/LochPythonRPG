@@ -111,7 +111,7 @@ class SkyRenderer:
     POINT_LIGHT_PATH = 'data/lighting/point_light.png'
     camera = None
     sky_surface = None
-    point_light_images = []
+    point_light_images = dict()
     light_sources = []
     darknes = 0
 
@@ -120,29 +120,34 @@ class SkyRenderer:
         cls.camera = camera
 
     @classmethod
-    def _load_point_light_graphics(cls, levels_count=8):
+    def get_point_light_graphic(cls, level=7, color=(255,255,255)):
+        key = level, color
+        if key in cls.point_light_images:
+            return cls.point_light_images[key]
+
+        print('Building light image', level, color)
         src_image = pygame.image.load(cls.POINT_LIGHT_PATH)
         src_size, src_depth = (src_image.get_width(), src_image.get_height()), src_image.get_bitsize()
         inv_surface = pygame.Surface(src_size, depth=src_depth)
-        inv_surface.fill(pygame.color.Color('White'))
+        inv_surface.fill(color)
+        # inv_surface.fill(pygame.color.Color('White'))
         inv_surface.blit(src_image, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
 
-        result = []
         min_size = POINT_LIGHT_MIN_IMAGE_SIZE
         levels_count = POINT_LIGHT_STRENGTH_LEVELS
-        for level in range(levels_count - 1):
-            scale_factor = level / levels_count
-            img_width = int(min_size[0] + scale_factor * (src_size[0] - min_size[0]))
-            img_height = int(min_size[1] + scale_factor * (src_size[1] - min_size[1]))
-            result.append(pygame.transform.scale(inv_surface, (img_width, img_height)))
-        result.append(inv_surface)
+
+        scale_factor = level / levels_count
+        img_width = int(min_size[0] + scale_factor * (src_size[0] - min_size[0]))
+        img_height = int(min_size[1] + scale_factor * (src_size[1] - min_size[1]))
+        result = pygame.transform.scale(inv_surface, (img_width, img_height))
+        cls.point_light_images[key] = result
         return result
 
     @classmethod
     def init(cls):
         width, height = MainRenderer.rendering_width, MainRenderer.rendering_height
         cls.sky_surface = pygame.Surface((width, height), depth=MainRenderer.world_surface.get_bitsize())
-        cls.point_light_images = cls._load_point_light_graphics()
+        # cls.point_light_images = cls._load_point_light_graphics()
         # aww
         if not cls.light_sources:
             cls.light_sources = []
@@ -155,7 +160,8 @@ class SkyRenderer:
         cls.sky_surface.fill((channel_value, channel_value, channel_value))
         for ls_prop in cls.light_sources:
             light_strength = ls_prop.strength
-            point_light_image = cls.point_light_images[light_strength]
+            light_color = ls_prop.color
+            point_light_image = cls.get_point_light_graphic(light_strength, light_color)
             point_light_img_size = (point_light_image.get_width() // 2, point_light_image.get_height() // 2)
             light_pos = sub_tuples_2D(ls_prop.position, point_light_img_size)
             light_pos = sub_tuples_2D(light_pos, cls.camera)

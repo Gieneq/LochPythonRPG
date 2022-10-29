@@ -1,3 +1,4 @@
+import math
 from random import randint
 from enum import Enum, auto
 
@@ -8,7 +9,8 @@ from pygame.sprite import Sprite
 from abc import ABC, abstractmethod
 
 import core.timers
-from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS, POINT_LIGHT_MIN_STRENGTH, POINT_LIGHT_MAX_STRENGTH
+from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS, POINT_LIGHT_MIN_STRENGTH, \
+    POINT_LIGHT_MAX_STRENGTH
 
 from core.debug import Debugger
 from core.renderer import WorldRenderer, SkyRenderer
@@ -39,15 +41,19 @@ class RenderProperty:
 
 class LightSourceProperty(UpdateProperty):
 
-    def __init__(self, parent_rect, relative_position, strength, active=True):
+    def __init__(self, parent_rect, relative_position, strength, color, active=True):
         self.parent_rect = parent_rect
         self.relative_position = relative_position
         self.position = parent_rect.x, parent_rect.y
         self.strength = strength
         self.active = active
+        self.color = color
         self.deviation_timer = core.timers.global_timers.get_timer(100)
         self.deviation_timer.attach(self.rand_deviation)
         self.deviation = (0, 0)
+
+
+
 
     @property
     def strength(self):
@@ -443,6 +449,42 @@ class WSADDriven(InputProperty, UpdateProperty):
         Debugger.print(f"WSAD_driven_rect: {self.moving_prop}")
 
 
+class EmitterProperty(UpdateProperty):
+
+    # @classmethod
+    # def fire_particles_emitter(cls):
+
+
+    def __init__(self, template_sprite_prop, template_animation_prop=None):
+        from objects.go import GameObject
+        self.template_sprite_prop = template_sprite_prop
+        self.template_animation_prop = template_animation_prop
+        # self.lifetime = range(100,2000)
+        # self.initial_direction_angle = range(0,math.pi)
+        self.particles = []
+
+    def add_template_light_property(self, template_light_prop):
+        self.template_light_prop = template_light_prop
+
+    def emit(self):
+        pass
+        #add particle, as tuple with lifetime
+
+    def update(self, *args, **kwargs):
+        pass
+    #remove particles
+
+
+class ParticleProperty(UpdateProperty):
+    #todo remove
+
+    def __init__(self):
+        pass
+
+    def update(self, *args, **kwargs):
+        pass
+
+
 class Props(Enum):
     SPRITE = SpriteProperty
     COLLISION = CollisionProperty
@@ -451,3 +493,5 @@ class Props(Enum):
     ANIMATION = AnimationProperty
     MOVEMENT_ANIMATION = MovementAnimationProperty
     LIGHT_SOURCE = LightSourceProperty
+    EMITTER = EmitterProperty
+    PARTICLE = ParticleProperty
