@@ -93,8 +93,6 @@ Added another graphics, some of them needs tweaks and changes but it is not impo
 
 Tiled was used to prepare map. There is need to create height layers and stack floor details.
 
-![Tiled editor](img/tiled_editor.JPG)
-
 ![Animated nature and shore](img/beach_grass.gif)
 
 ### TSX, TMX fileformat (28.10.2022)
