@@ -15,10 +15,6 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="20" width="20" height="20"/>
   </objectgroup>
-  <animation>
-   <frame tileid="2" duration="1000"/>
-   <frame tileid="3" duration="1000"/>
-  </animation>
  </tile>
  <tile id="4">
   <objectgroup draworder="index" id="2">
@@ -28,6 +24,7 @@
  <tile id="6">
   <properties>
    <property name="light" type="int" value="5"/>
+   <property name="light_color" type="color" value=""/>
    <property name="particles" value="flame"/>
    <property name="source_x" type="int" value="10"/>
    <property name="source_y" type="int" value="10"/>

@@ -12,25 +12,30 @@
   </objectgroup>
  </tile>
  <tile id="2">
-  <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="3" width="20" height="14"/>
-  </objectgroup>
-  <animation>
-   <frame tileid="2" duration="1000"/>
-   <frame tileid="3" duration="1000"/>
-  </animation>
- </tile>
- <tile id="4">
   <properties>
    <property name="use" type="bool" value="false"/>
   </properties>
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="3" width="20" height="14"/>
   </objectgroup>
-  <animation>
-   <frame tileid="4" duration="1000"/>
-   <frame tileid="5" duration="1000"/>
-  </animation>
+ </tile>
+ <tile id="3">
+  <properties>
+   <property name="use" type="bool" value="false"/>
+  </properties>
+ </tile>
+ <tile id="4">
+  <properties>
+   <property name="use" type="bool" value="true"/>
+  </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="3" width="20" height="14"/>
+  </objectgroup>
+ </tile>
+ <tile id="5">
+  <properties>
+   <property name="use" type="bool" value="true"/>
+  </properties>
  </tile>
  <tile id="10">
   <objectgroup draworder="index" id="2">
@@ -76,6 +81,7 @@
  <tile id="30">
   <properties>
    <property name="light" type="int" value="8"/>
+   <property name="light_color" type="color" value=""/>
    <property name="particles" value="flame"/>
    <property name="source_x" type="int" value="10"/>
    <property name="source_y" type="int" value="10"/>
@@ -93,6 +99,10 @@
  <tile id="34">
   <properties>
    <property name="light" type="int" value="0"/>
+   <property name="light_color" type="color" value=""/>
+   <property name="particles" value="flame"/>
+   <property name="source_x" type="int" value="10"/>
+   <property name="source_y" type="int" value="10"/>
   </properties>
  </tile>
 </tileset>
