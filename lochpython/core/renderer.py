@@ -3,6 +3,7 @@ import time
 from functools import reduce
 
 import pygame.color
+from pygame.rect import Rect
 
 from lochpython.core.debug import Debugger
 from lochpython.core.settings import *
@@ -89,7 +90,6 @@ class WorldRenderer:
         if sprite_prop in cls.stack[dst_layer]:
             cls.stack[dst_layer].remove(sprite_prop)
 
-
     @classmethod
     def sort_order(cls):
         Debugger.print('Renderer sorting')
@@ -100,52 +100,68 @@ class WorldRenderer:
         for layer in cls.stack:
             layer.attach_camera(cls.world.camera)
             layer.draw(MainRenderer.world_surface)
+
     @classmethod
     @property
     def visible_objects_count(cls):
         return reduce(lambda a, b: a + len(b), cls.stack, 0)
 
+
 class SkyRenderer:
+    POINT_LIGHT_PATH = 'data/lighting/point_light.png'
     camera = None
     sky_surface = None
-    point_light_image = None
+    point_light_images = []
     light_sources = []
     darknes = 0
+
     @classmethod
     def attach_camera(cls, camera):
         cls.camera = camera
 
     @classmethod
+    def _load_point_light_graphics(cls, levels_count=8):
+        src_image = pygame.image.load(cls.POINT_LIGHT_PATH)
+        src_size, src_depth = (src_image.get_width(), src_image.get_height()), src_image.get_bitsize()
+        inv_surface = pygame.Surface(src_size, depth=src_depth)
+        inv_surface.fill(pygame.color.Color('White'))
+        inv_surface.blit(src_image, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
+
+        result = []
+        min_size = POINT_LIGHT_MIN_IMAGE_SIZE
+        levels_count = POINT_LIGHT_STRENGTH_LEVELS
+        for level in range(levels_count - 1):
+            scale_factor = level / levels_count
+            img_width = int(min_size[0] + scale_factor * (src_size[0] - min_size[0]))
+            img_height = int(min_size[1] + scale_factor * (src_size[1] - min_size[1]))
+            result.append(pygame.transform.scale(inv_surface, (img_width, img_height)))
+        result.append(inv_surface)
+        return result
+
+    @classmethod
     def init(cls):
         width, height = MainRenderer.rendering_width, MainRenderer.rendering_height
         cls.sky_surface = pygame.Surface((width, height), depth=MainRenderer.world_surface.get_bitsize())
-        #aww
-        cls.point_light_image = pygame.image.load('data/lighting/point_light.png')
+        cls.point_light_images = cls._load_point_light_graphics()
+        # aww
         if not cls.light_sources:
             cls.light_sources = []
         # cls.light_sources.append()
         # print(cls.sky_surface)
 
-
     @classmethod
     def render(cls):
-        cls.darknes = (math.sin(time.time())+1)/2
-        # print(cls.darknes)
-        channel_value = int(255 * cls.darknes)
-        channel_value = min(215,max(30,channel_value))
-        cls.sky_surface.fill((channel_value,channel_value,channel_value))
-
-        translation = sub_tuples_2D(cls.camera, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
-        translation = add_tuples_2D(translation, (cls.point_light_image.get_width()//2, cls.point_light_image.get_height()//2))
+        channel_value = 180
+        cls.sky_surface.fill((channel_value, channel_value, channel_value))
         for ls_prop in cls.light_sources:
-            light_pos = sub_tuples_2D(ls_prop.position, translation)
-
-            # image_data = sprite_prop.image_data
-            # sprite_clip_rect = sprite_prop.clip_rect
-            # scaled_image = pygame.transform.scale(sprite_image, (w,h))
-
-            cls.sky_surface.blit(cls.point_light_image, light_pos)
-        MainRenderer.world_surface.blit(cls.sky_surface, (0,0), special_flags=pygame.BLEND_RGBA_SUB)
+            light_strength = ls_prop.strength
+            point_light_image = cls.point_light_images[light_strength]
+            point_light_img_size = (point_light_image.get_width() // 2, point_light_image.get_height() // 2)
+            light_pos = sub_tuples_2D(ls_prop.position, point_light_img_size)
+            light_pos = sub_tuples_2D(light_pos, cls.camera)
+            light_pos = add_tuples_2D(light_pos, (HALF_RENDERING_WIDTH, HALF_RENDERING_HEIGHT))
+            cls.sky_surface.blit(point_light_image, light_pos, special_flags=pygame.BLEND_RGB_SUB)
+        MainRenderer.world_surface.blit(cls.sky_surface, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
 
     @classmethod
     def add_point_light(cls, light):

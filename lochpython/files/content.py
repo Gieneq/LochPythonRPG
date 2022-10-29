@@ -76,9 +76,10 @@ class TilesetData:
 
 class TileProperties:
     class LightEffect:
-        def __init__(self, strength=0, relative_position = (0,0)):
+        def __init__(self, strength=0, relative_position = (0,0), active=False):
             self.strength = strength
             self.relative_position = relative_position
+            self.active = active
     class KeyFrame:
         def __init__(self, tile_id, interval):
             self.tile_id = tile_id
@@ -147,7 +148,8 @@ class TileProperties:
                     light_strength = int(light_strength)
                     source_x = int(get_property_by_attr_name(other_properties, 'source_x', 0))
                     source_y = int(get_property_by_attr_name(other_properties, 'source_y', 0))
-                    tile_data.light_effect =  cls.LightEffect(light_strength, (source_x, source_y))
+                    active = int(get_property_by_attr_name(other_properties, 'active', False))
+                    tile_data.light_effect =  cls.LightEffect(light_strength, (source_x, source_y), active)
 
 
             tiles_data[tile_id] = tile_data

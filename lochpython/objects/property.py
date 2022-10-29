@@ -8,7 +8,7 @@ from pygame.sprite import Sprite
 from abc import ABC, abstractmethod
 
 import core.timers
-from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS
+from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS, POINT_LIGHT_MIN_STRENGTH, POINT_LIGHT_MAX_STRENGTH
 
 from core.debug import Debugger
 from core.renderer import WorldRenderer, SkyRenderer
@@ -38,6 +38,7 @@ class RenderProperty:
 
 
 class LightSourceProperty(UpdateProperty):
+
     def __init__(self, parent_rect, relative_position, strength, active=True):
         self.parent_rect = parent_rect
         self.relative_position = relative_position
@@ -47,6 +48,14 @@ class LightSourceProperty(UpdateProperty):
         self.deviation_timer = core.timers.global_timers.get_timer(100)
         self.deviation_timer.attach(self.rand_deviation)
         self.deviation = (0, 0)
+
+    @property
+    def strength(self):
+        return self._strength
+
+    @strength.setter
+    def strength(self, strngth):
+        self._strength = min(max(POINT_LIGHT_MIN_STRENGTH, strngth), POINT_LIGHT_MAX_STRENGTH)
 
     @property
     def active(self):
@@ -61,7 +70,7 @@ class LightSourceProperty(UpdateProperty):
             SkyRenderer.remove_point_light(self)
 
     def rand_deviation(self):
-        self.deviation = randint(-1, 1), randint(-1,1)
+        self.deviation = randint(-1, 1), randint(-1, 1)
 
     def update(self, *args, **kwargs):
         if self._active:
