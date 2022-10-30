@@ -3,13 +3,13 @@ from math import sqrt
 from pygame import Rect
 from pygame.math import Vector2
 
-from core.debug import Debugger
-from core.utils import distance_squared, radius_squared_from_rect
-from objects.go import GameObject
-from objects.property import Props
-from world.worldloader import WorldLoader, PlayerLoader
-from core.renderer import WorldRenderer
-from core.settings import COLLISION_RANGE, RENDERING_HEIGHT, RENDERING_WIDTH, FOV_OFFSET
+from lochpython.core.debug import Debugger
+from lochpython.core.utils import distance_squared, radius_squared_from_rect
+from lochpython.objects.go import GameObject
+from lochpython.objects.property import Props
+from lochpython.world.worldloader import WorldLoader, PlayerLoader
+from lochpython.core.renderer import WorldRenderer
+from lochpython.core.settings import COLLISION_RANGE, RENDERING_HEIGHT, RENDERING_WIDTH, FOV_OFFSET
 
 
 class Camera(Vector2):
@@ -69,7 +69,7 @@ class World:
         self.colliding_objects = []
 
         WorldLoader.load_test_map(self)
-        self.player = PlayerLoader(self).load((350, 200))
+        self.player = PlayerLoader(self).load((490, 330))
         self.add_game_object(self.player, GameObject.GOType.OBJECTS)
 
         self.camera = Camera()

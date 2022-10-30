@@ -1,4 +1,4 @@
-from core.settings import *
+from lochpython.core.settings import *
 
 
 class Debugger:

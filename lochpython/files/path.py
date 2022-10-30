@@ -1,6 +1,6 @@
 import os
 from typing import NamedTuple
-from core import settings
+from lochpython.core import settings
 
 
 def remove_extension(file_name):

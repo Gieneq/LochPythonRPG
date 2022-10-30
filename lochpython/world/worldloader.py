@@ -1,9 +1,9 @@
 import random
-from files.content import loader
-from core.settings import *
-from objects.go import GameObject
-from objects import property as p
-from core.timers import global_controllers
+from lochpython.files.content import loader
+from lochpython.core.settings import *
+from lochpython.objects.go import GameObject
+from lochpython.objects import property as p
+from lochpython.core.timers import global_controllers
 
 
 class PlayerLoader:

@@ -9,7 +9,7 @@ from lochpython.core.debug import Debugger
 from lochpython.core.settings import *
 from pygame.math import Vector2
 
-from core.utils import sub_tuples_2D, add_tuples_2D
+from lochpython.core.utils import sub_tuples_2D, add_tuples_2D
 
 
 class RenderingGroup(list):

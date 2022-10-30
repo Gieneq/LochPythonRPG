@@ -1,6 +1,6 @@
 from enum import Enum
 
-from objects.property import Props
+from lochpython.objects.property import Props
 
 
 class GameObject:

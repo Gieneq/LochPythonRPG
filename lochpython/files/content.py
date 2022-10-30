@@ -1,12 +1,12 @@
-from core.settings import TILESIZE
+from lochpython.core.settings import TILESIZE
 import os
 import pygame
 from pygame.rect import Rect
 import xml.etree.ElementTree as et
 
-from core.utils import StackXY
-from files.path import ResourceFiles, remove_extension
-from objects.go import GameObject
+from lochpython.core.utils import StackXY
+from lochpython.files.path import ResourceFiles, remove_extension
+from lochpython.objects.go import GameObject
 
 
 class TilesetData:

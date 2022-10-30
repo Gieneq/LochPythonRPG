@@ -1,4 +1,3 @@
-import math
 from random import randint
 from enum import Enum, auto
 
@@ -8,14 +7,14 @@ from pygame.math import Vector2
 from pygame.sprite import Sprite
 from abc import ABC, abstractmethod
 
-import core.timers
-from core.settings import TILESIZE, DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS, POINT_LIGHT_MIN_STRENGTH, \
+from lochpython.core.timers import global_timers
+from lochpython.core.settings import DEBUG_VISIBLE_OBJECTS, DEBUG_COLLISION_BLOCKS, POINT_LIGHT_MIN_STRENGTH, \
     POINT_LIGHT_MAX_STRENGTH
 
-from core.debug import Debugger
-from core.renderer import WorldRenderer, SkyRenderer
-from core.utils import generate_span_rect
-from core.timers import global_timers, AnimationController, Timer
+from lochpython.core.debug import Debugger
+from lochpython.core.renderer import WorldRenderer, SkyRenderer
+from lochpython.core.utils import generate_span_rect
+from lochpython.core.timers import AnimationController, Timer
 
 
 # from objects.go import GameObject
@@ -48,7 +47,7 @@ class LightSourceProperty(UpdateProperty):
         self.strength = strength
         self.active = active
         self.color = color
-        self.deviation_timer = core.timers.global_timers.get_timer(100)
+        self.deviation_timer = global_timers.get_timer(100)
         self.deviation_timer.attach(self.rand_deviation)
         self.deviation = (0, 0)
 
@@ -456,7 +455,7 @@ class EmitterProperty(UpdateProperty):
 
 
     def __init__(self, template_sprite_prop, template_animation_prop=None):
-        from objects.go import GameObject
+        from lochpython.objects.go import GameObject
         self.template_sprite_prop = template_sprite_prop
         self.template_animation_prop = template_animation_prop
         # self.lifetime = range(100,2000)

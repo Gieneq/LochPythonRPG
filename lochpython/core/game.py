@@ -1,13 +1,13 @@
-from core.settings import *
-from core.timers import global_timers
+from lochpython.core.settings import *
+from lochpython.core.timers import global_timers
 
 import sys
-from core.debug import Debugger
-from core.timers import AnimationController
-from world.world import World
-import core.renderer as renderer
+from lochpython.core.debug import Debugger
+from lochpython.core.timers import AnimationController
+from lochpython.world.world import World
+import lochpython.core.renderer as renderer
 
-from core.utils import NanoTimer, ValueFilter
+from lochpython.core.utils import NanoTimer, ValueFilter
 
 
 def check_if_exit(on_exit_function):
