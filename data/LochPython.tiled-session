@@ -48,6 +48,10 @@
         "tilesets/objects_2x2.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1.5
+        },
+        "tilesets/particles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 32
         }
     },
     "frame.defaultDuration": 2000,
@@ -64,8 +68,9 @@
         "tilesets/objects_2x2.tsx"
     ],
     "project": "LochPython.tiled-project",
-    "property.type": "string",
+    "property.type": "int",
     "recentFiles": [
+        "tilesets/particles.tsx",
         "entities/player.tsx",
         "tilesets/objects_2x2.tsx",
         "tilesets/objects_1x2.tsx",

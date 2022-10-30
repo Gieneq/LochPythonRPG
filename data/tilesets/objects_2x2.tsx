@@ -7,11 +7,6 @@
   </objectgroup>
  </tile>
  <tile id="1">
-  <properties>
-   <property name="particles" value="leaf"/>
-   <property name="source_x" type="int" value="20"/>
-   <property name="source_y" type="int" value="20"/>
-  </properties>
   <objectgroup draworder="index" id="2">
    <object id="1" x="14" y="20" width="20" height="16"/>
   </objectgroup>

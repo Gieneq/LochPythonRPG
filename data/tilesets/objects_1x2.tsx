@@ -23,11 +23,14 @@
  </tile>
  <tile id="6">
   <properties>
+   <property name="active" type="bool" value="true"/>
    <property name="light" type="int" value="5"/>
-   <property name="light_color" type="color" value=""/>
+   <property name="light_color" type="color" value="#ffe6c896"/>
+   <property name="light_x" type="int" value="10"/>
+   <property name="light_y" type="int" value="10"/>
    <property name="particles" value="flame"/>
-   <property name="source_x" type="int" value="10"/>
-   <property name="source_y" type="int" value="10"/>
+   <property name="particles_x" type="int" value="10"/>
+   <property name="particles_y" type="int" value="10"/>
   </properties>
   <objectgroup draworder="index" id="2">
    <object id="1" x="5" y="35" width="10" height="4"/>

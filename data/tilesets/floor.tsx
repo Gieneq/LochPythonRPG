@@ -63,17 +63,17 @@
  </tile>
  <tile id="42">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="0" width="20" height="20"/>
+   <object id="1" x="0" y="0" width="20" height="12"/>
   </objectgroup>
  </tile>
  <tile id="43">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="0" width="20" height="20"/>
+   <object id="1" x="0" y="0" width="20" height="12"/>
   </objectgroup>
  </tile>
  <tile id="44">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="0" width="20" height="20"/>
+   <object id="1" x="0" y="0" width="20" height="12"/>
   </objectgroup>
  </tile>
  <tile id="45">
